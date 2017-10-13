@@ -12,7 +12,7 @@ var (
 
 // PIPELINE #2: agent
 // all the packets from handleClient() will be handled
-func Agent(sess *Session, wg *sync.WaitGroup, in chan []byte, out *Buffer) {
+func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan []byte, out *Buffer) {
 	defer wg.Done() // will decrease waitgroup by one, useful for manual server shutdown
 
 	// init session
@@ -61,8 +61,8 @@ func Agent(sess *Session, wg *sync.WaitGroup, in chan []byte, out *Buffer) {
 		case <-min_timer: // minutes timer
 			timerWork(sess, out)
 			min_timer = time.After(time.Minute)
-			// case <-die: // server is shuting down...
-			// 	sess.Flag |= SESS_KICKED_OUT
+		case <-shuttingDownChan: // server is shuting down...
+			sess.Flag |= SESS_KICKED_OUT
 		}
 
 		// see if the player should be kicked out.

@@ -19,7 +19,10 @@ const (
 // SALT = "d601ea184522487c5182e0957a0cd23c"
 )
 
-var Wg sync.WaitGroup
+var (
+	Wg               sync.WaitGroup
+	shuttingDownChan = make(chan struct{})
+)
 
 type Config struct {
 	Listen                        string
@@ -130,7 +133,7 @@ func handleClient(conn net.Conn, config *Config) {
 
 	// start agent for PACKET processing
 	Wg.Add(1)
-	go agent_server.Agent(&sess, &Wg, in, out)
+	go agent_server.Agent(&sess, shuttingDownChan, &Wg, in, out)
 
 	// read loop
 	for {
@@ -181,12 +184,11 @@ func sig_handler(wg *sync.WaitGroup) {
 		msg := <-ch
 		switch msg {
 		case syscall.SIGTERM: // 关闭agent
-			// close(die)
+			close(shuttingDownChan)
 			log.Info("sigterm received")
 			log.Info("waiting for agents close, please wait...")
-			wg.Wait()
 			log.Info("agent shutdown.")
-			os.Exit(0)
+			wg.Done()
 		}
 	}
 }
@@ -205,5 +207,7 @@ func Start(config *Config) {
 	go udpServer(config)
 
 	Wg.Wait()
+
+	os.Exit(0)
 	return
 }
