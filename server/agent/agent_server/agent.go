@@ -1,7 +1,7 @@
 package agent_server
 
 import (
-	"Clans/log"
+	"Clans/server/log"
 	"sync"
 	"time"
 )

@@ -14,7 +14,7 @@
 
 package main
 
-import "clans/cmd"
+import "Clans/server/cmd"
 
 func main() {
 	cmd.Execute()

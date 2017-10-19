@@ -1,7 +1,7 @@
 package clans
 
 import (
-	"clans/clans/clan_server"
+	"Clans/server/clans/clan_server"
 	"fmt"
 )
 

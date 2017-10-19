@@ -15,52 +15,35 @@
 package cmd
 
 import (
-	"Clans/agent"
+	"Clans/server/clans"
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 )
 
-// agentCmd represents the agent command
-var agentCmd = &cobra.Command{
-	Use:   "agent",
-	Short: "代理服务器",
-	Long:  `代理服务器，唯一面向外网的服务器`,
+// startCmd represents the start command
+var startCmd = &cobra.Command{
+	Use:   "start",
+	Short: "start a server",
+	Long:  "start a server",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("agent called")
-
-		config := &agent.Config{
-			Listen:       "127.0.0.1:9090",
-			ReadDeadline: 15 * time.Second,
-			Sockbuf:      32767,
-			Udp_sockbuf:  4194304,
-			Txqueuelen:   128,
-			Dscp:         46,
-			Sndwnd:       32,
-			Rcvwnd:       32,
-			Mtu:          1280,
-			Nodelay:      1,
-			Interval:     20,
-			Resend:       1,
-			Nc:           1,
-			RpmLimit:     200,
-		}
-
-		agent.Start(config)
+		// TODO: Work your own magic here
+		fmt.Println("start called")
+		clans.Start()
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(agentCmd)
+	RootCmd.AddCommand(startCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// agentCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// startCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// agentCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 }

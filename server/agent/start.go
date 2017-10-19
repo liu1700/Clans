@@ -1,8 +1,8 @@
 package agent
 
 import (
-	"Clans/agent/agent_server"
-	"Clans/log"
+	"Clans/server/agent/agent_server"
+	"Clans/server/log"
 	"encoding/binary"
 	"io"
 	"net"

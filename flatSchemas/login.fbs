@@ -1,0 +1,6 @@
+namespace gameData;
+
+table RqLogin {
+    name:string;
+    password:string;
+}

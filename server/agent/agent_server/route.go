@@ -1,8 +1,8 @@
 package agent_server
 
 import (
-	"Clans/agent/packet"
-	"Clans/log"
+	"Clans/server/agent/packet"
+	"Clans/server/log"
 )
 
 // route client protocol
