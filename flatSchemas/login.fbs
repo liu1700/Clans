@@ -1,4 +1,4 @@
-namespace gameData;
+namespace flats;
 
 table RqLogin {
     name:string;
