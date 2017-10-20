@@ -12,10 +12,11 @@ const (
 )
 
 type NetPackage struct {
-	PacketId uint8
-	Version  uint8
-	SeqId    uint32
-	Data     []byte
+	PacketId  uint8
+	Version   uint8
+	HandlerId uint8
+	SeqId     uint32
+	Data      []byte
 }
 
 func (p *NetPackage) Bytes() []byte {
@@ -24,6 +25,7 @@ func (p *NetPackage) Bytes() []byte {
 	binary.Write(buf, binary.BigEndian, p.PacketId)          // packet id 包类型
 	binary.Write(buf, binary.BigEndian, p.Version)           // 版本号
 	binary.Write(buf, binary.BigEndian, p.SeqId)             // seq id
+	binary.Write(buf, binary.BigEndian, p.HandlerId)         // 如果是请求的话就是RequestId,返回的话就是ResponseId
 	binary.Write(buf, binary.BigEndian, uint32(len(p.Data))) // 写入数据包长度
 	binary.Write(buf, binary.BigEndian, p.Data)              // 数据内容
 
@@ -47,19 +49,19 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	//			seqNum := binary.BigEndian.Uint32(byteSlice[seqStart:seqEnd])
 	//			fmt.Printf("Seq num%d \n", seqNum)
 
-	handerIdStart := uint32(0)
-	handerIdEnd := handerIdStart + 1
+	packetIdStart := uint32(0)
+	packetIdEnd := packetIdStart + 1
 
 	// if handerIdStart > iSize || handerIdEnd > iSize {
 	// 	// return nil, 0, errors.New(fmt.Sprintf(" handerIdStart > iSize || handerIdEnd > iSize"))
 	// 	continue
 	// }
 
-	handerId := uint8(byteSlice[handerIdStart])
+	packetId := uint8(byteSlice[packetIdStart])
 
 	//	fmt.Printf("Handler ID %d \n", handerId)
 
-	verIndex := handerIdEnd + 1
+	verIndex := packetIdEnd + 1
 
 	// if verIndex > iSize {
 	// 	// return nil, 0, errors.New(fmt.Sprintf(" verIndex > iSize"))
@@ -73,7 +75,10 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	seqEnd := seqStart + 4
 	seqData := binary.BigEndian.Uint32(byteSlice[seqStart:seqEnd])
 
-	sizeStart := seqEnd
+	handlerIndex := seqEnd + 1
+	handlerId := uint8(byteSlice[handlerIndex])
+
+	sizeStart := handlerIndex
 	sizeEnd := sizeStart + 4
 
 	// if length < uint32(i)+minimalPackageSize {
@@ -106,9 +111,10 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	cloneData := make([]byte, len(data))
 	copy(cloneData, data)
 	pack = &NetPackage{
-		PacketId: handerId,
-		Version:  version,
-		SeqId:    seqData,
-		Data:     cloneData}
+		PacketId:  packetId,
+		Version:   version,
+		SeqId:     seqData,
+		HandlerId: handlerId,
+		Data:      cloneData}
 	return pack, nil
 }

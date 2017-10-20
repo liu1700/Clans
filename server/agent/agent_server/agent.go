@@ -49,9 +49,8 @@ func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in
 			sess.PacketCount1Min++
 			sess.PacketTime = time.Now()
 
-			if result := route(sess, msg); result != nil && len(result) > 0 {
-				out.send(sess, result)
-			}
+			route(sess, msg, out)
+
 			sess.LastPacketTime = sess.PacketTime
 		// case frame := <-sess.MQ: // packets from game
 		// 	switch frame.Type {

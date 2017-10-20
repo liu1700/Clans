@@ -3,8 +3,8 @@ WORK_PATH=$GOPATH/src/Clans
 PROTO_DIR="$WORK_PATH/flatSchemas"
 TOOL_DIR="$WORK_PATH/tools/bin"
 
-GO_OUT_DIR="$WORK_PATH/server"
-CSHARP_OUT_DIR="$FRONTEND_DIR/Assets/RunAway/Proxy" 
+GO_OUT_DIR="$WORK_PATH/server/"
+CSHARP_OUT_DIR=$FRONTEND_DIR/Assets/RunAway/Proxy/
 
 cd $PROTO_DIR
 echo "Generating flatbuffers for Golang"
