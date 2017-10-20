@@ -4,7 +4,7 @@ import (
 	"Clans/server/agent/agent_server"
 	"Clans/server/log"
 	"Clans/server/netPackages"
-	"io"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -93,6 +93,8 @@ func udpServer(config *Config) {
 		conn.SetStreamMode(true)
 		conn.SetMtu(config.Mtu)
 
+		log.Logger().Debug("accept kcp")
+
 		// start a goroutine for every incoming connection for reading
 		go handleClient(conn, config)
 	}
@@ -100,8 +102,6 @@ func udpServer(config *Config) {
 
 // PIPELINE #1: handleClient
 // the goroutine is used for reading incoming PACKETS
-// each packet is defined as :
-// | 2B size |     DATA       |
 //
 func handleClient(conn net.Conn, config *Config) {
 	defer conn.Close()
@@ -134,6 +134,7 @@ func handleClient(conn net.Conn, config *Config) {
 	go agent_server.Agent(&sess, shuttingDownChan, &Wg, in, out)
 
 	// read loop
+	readBytes := make([]byte, netPackages.PACKET_LIMIT)
 	for {
 		// solve dead link problem:
 		// physical disconnection without any communcation between client and server
@@ -141,10 +142,9 @@ func handleClient(conn net.Conn, config *Config) {
 		conn.SetReadDeadline(time.Now().Add(config.ReadDeadline))
 
 		// alloc a byte slice of the size defined in the header for reading data
-		readBytes := make([]byte, netPackages.PACKET_LIMIT)
-		n, err := io.ReadFull(conn, readBytes)
+		n, err := conn.Read(readBytes)
 		if err != nil {
-			log.Logger().Warnf("read readBytes failed, ip:%v reason:%v size:%v", sess.IP, err, n)
+			log.Logger().Errorf("read readBytes failed, ip:%v reason:%v size:%v", sess.IP, err, n)
 			return
 		}
 
@@ -159,6 +159,8 @@ func handleClient(conn net.Conn, config *Config) {
 			log.Logger().Errorf("read payload faild, err :%v", err.Error())
 			return
 		}
+
+		fmt.Println(*payload)
 
 		// deliver the data to the input queue of agent()
 		select {

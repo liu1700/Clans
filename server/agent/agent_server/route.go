@@ -21,7 +21,7 @@ func route(sess *Session, pack *netPackages.NetPackage) []byte {
 		var ret []byte
 		// 根据协议号断做服务划分
 		// 协议号的划分采用分割协议区间, 用户可以自定义多个区间，用于转发到不同的后端服务
-		if pack.PacketId > 1000 {
+		if pack.PacketId > 5 {
 			// if err := forward(sess, p[4:]); err != nil {
 			// 	log.Errorf("service id:%v execute failed, error:%v", b, err)
 			// 	sess.Flag |= SESS_KICKED_OUT

@@ -12,7 +12,7 @@ const (
 )
 
 type NetPackage struct {
-	PacketId uint16
+	PacketId uint8
 	Version  uint8
 	SeqId    uint32
 	Data     []byte
@@ -37,8 +37,6 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 		return nil, errors.New(fmt.Sprintf("Data size  %d is less than mimial size ", length))
 	}
 
-	i := 0
-
 	// iSize := uint32(length - 1)
 	// fmt.Println("iiiiiiiiiiiiiii")
 	// fmt.Println(i)
@@ -49,15 +47,15 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	//			seqNum := binary.BigEndian.Uint32(byteSlice[seqStart:seqEnd])
 	//			fmt.Printf("Seq num%d \n", seqNum)
 
-	handerIdStart := uint32(i + 1)
-	handerIdEnd := handerIdStart + 2
+	handerIdStart := uint32(0)
+	handerIdEnd := handerIdStart + 1
 
 	// if handerIdStart > iSize || handerIdEnd > iSize {
 	// 	// return nil, 0, errors.New(fmt.Sprintf(" handerIdStart > iSize || handerIdEnd > iSize"))
 	// 	continue
 	// }
 
-	handerId := binary.BigEndian.Uint16(byteSlice[handerIdStart:handerIdEnd])
+	handerId := uint8(byteSlice[handerIdStart])
 
 	//	fmt.Printf("Handler ID %d \n", handerId)
 
