@@ -1,8 +1,6 @@
 package log
 
 import (
-	"fmt"
-
 	"go.uber.org/zap"
 )
 
@@ -23,38 +21,42 @@ func InitLogger(logLevel int) {
 	sugeredLogger = logger.Sugar()
 }
 
-// 各种log
-func Info(infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	sugeredLogger.Info(infos)
+func Logger() *zap.SugaredLogger {
+	return sugeredLogger
 }
 
-func Infof(templateStr string, infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	sugeredLogger.Infof(templateStr, infos)
-}
+// // 各种log
+// func Info(infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	sugeredLogger.Info(infos...)
+// }
 
-func Warning(infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	sugeredLogger.Warn(infos)
-}
+// func Infof(templateStr string, infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	sugeredLogger.Infof(templateStr, infos...)
+// }
 
-func Warningf(templateStr string, infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	sugeredLogger.Warnf(templateStr, infos)
-}
+// func Warning(infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	sugeredLogger.Warn(infos)
+// }
 
-func Error(infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	sugeredLogger.Error(infos)
-}
+// func Warningf(templateStr string, infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	sugeredLogger.Warnf(templateStr, infos...)
+// }
 
-func Errorf(templateStr string, infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	sugeredLogger.Errorf(templateStr, infos)
-}
+// func Error(infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	sugeredLogger.Error(infos)
+// }
 
-func Println(infos ...interface{}) {
-	defer sugeredLogger.Sync()
-	fmt.Println(infos)
-}
+// func Errorf(templateStr string, infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	sugeredLogger.Errorf(templateStr, infos...)
+// }
+
+// func Println(infos ...interface{}) {
+// 	defer sugeredLogger.Sync()
+// 	fmt.Println(infos)
+// }

@@ -2,6 +2,7 @@ package agent_server
 
 import (
 	"Clans/server/log"
+	"Clans/server/netPackages"
 	"sync"
 	"time"
 )
@@ -12,13 +13,14 @@ var (
 
 // PIPELINE #2: agent
 // all the packets from handleClient() will be handled
-func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan []byte, out *Buffer) {
+func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.NetPackage, out *Buffer) {
 	defer wg.Done() // will decrease waitgroup by one, useful for manual server shutdown
 
 	// init session
 	// sess.MQ = make(chan pb.Game_Frame, 512)
 	sess.ConnectTime = time.Now()
 	sess.LastPacketTime = time.Now()
+
 	// minute timer
 	min_timer := time.After(time.Minute)
 
@@ -47,7 +49,7 @@ func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in
 			sess.PacketCount1Min++
 			sess.PacketTime = time.Now()
 
-			if result := route(sess, msg); result != nil {
+			if result := route(sess, msg); result != nil && len(result) > 0 {
 				out.send(sess, result)
 			}
 			sess.LastPacketTime = sess.PacketTime
@@ -85,7 +87,7 @@ func timerWork(sess *Session, out *Buffer) {
 	// 发包频率控制，太高的RPS直接踢掉
 	if sess.PacketCount1Min > rpmLimit {
 		sess.Flag |= SESS_KICKED_OUT
-		log.Errorf("userid %d, packet in 1m %d, total %d", sess.UserId, sess.PacketCount1Min, sess.PacketCount)
+		log.Logger().Errorf("userid %d, packet in 1m %d, total %d", sess.UserId, sess.PacketCount1Min, sess.PacketCount)
 		return
 	}
 }

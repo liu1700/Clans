@@ -1,8 +1,8 @@
 package agent_server
 
 import (
-	"Clans/server/agent/packet"
 	"Clans/server/log"
+	"Clans/server/netPackages"
 	"encoding/binary"
 	"net"
 )
@@ -18,10 +18,6 @@ type Buffer struct {
 
 // packet sending procedure
 func (buf *Buffer) send(sess *Session, data []byte) {
-	// in case of empty packet
-	if data == nil {
-		return
-	}
 
 	// encryption
 	// (NOT_ENCRYPTED) -> KEYEXCG -> ENCRYPT
@@ -36,7 +32,7 @@ func (buf *Buffer) send(sess *Session, data []byte) {
 	select {
 	case buf.pending <- data:
 	default: // packet will be dropped if txqueuelen exceeds
-		log.Warningf("userid %d ip %s", sess.UserId, sess.IP)
+		log.Logger().Warnf("userid %d ip %s", sess.UserId, sess.IP)
 	}
 	return
 }
@@ -63,7 +59,7 @@ func (buf *Buffer) rawSend(data []byte) bool {
 	// write data
 	n, err := buf.conn.Write(buf.cache[:sz+2])
 	if err != nil {
-		log.Warningf("Error send reply data, bytes: %v reason: %v", n, err)
+		log.Logger().Warnf("Error send reply data, bytes: %v reason: %v", n, err)
 		return false
 	}
 
@@ -75,6 +71,6 @@ func NewBuffer(conn net.Conn, ctrl chan struct{}, txqueuelen int) *Buffer {
 	buf := Buffer{conn: conn}
 	buf.pending = make(chan []byte, txqueuelen)
 	buf.ctrl = ctrl
-	buf.cache = make([]byte, packet.PACKET_LIMIT+2)
+	buf.cache = make([]byte, netPackages.PACKET_LIMIT+2)
 	return &buf
 }

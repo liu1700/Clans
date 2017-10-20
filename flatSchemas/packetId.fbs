@@ -1,0 +1,7 @@
+namespace flats;
+
+enum PacketId:byte {
+    None = 0,
+    Login = 1,
+    Game = 2
+}

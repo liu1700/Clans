@@ -3,7 +3,7 @@ package agent
 import (
 	"Clans/server/agent/agent_server"
 	"Clans/server/log"
-	"encoding/binary"
+	"Clans/server/netPackages"
 	"io"
 	"net"
 	"os"
@@ -46,13 +46,13 @@ func tcpServer(config *Config) {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	log.Info("listening on:", listener.Addr())
+	log.Logger().Info("listening on:", listener.Addr())
 
 	// loop accepting
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
-			log.Warning("accept failed:", err)
+			log.Logger().Warn("accept failed:", err)
 			continue
 		}
 		// set socket read buffer
@@ -67,24 +67,24 @@ func tcpServer(config *Config) {
 func udpServer(config *Config) {
 	l, err := kcp.Listen(config.Listen)
 	checkError(err)
-	log.Info("udp listening on:", l.Addr())
+	log.Logger().Info("udp listening on:", l.Addr())
 	lis := l.(*kcp.Listener)
 
 	if err := lis.SetReadBuffer(config.Sockbuf); err != nil {
-		log.Println("SetReadBuffer", err)
+		log.Logger().Error("SetReadBuffer", err)
 	}
 	if err := lis.SetWriteBuffer(config.Sockbuf); err != nil {
-		log.Println("SetWriteBuffer", err)
+		log.Logger().Error("SetWriteBuffer", err)
 	}
 	if err := lis.SetDSCP(config.Dscp); err != nil {
-		log.Println("SetDSCP", err)
+		log.Logger().Error("SetDSCP", err)
 	}
 
 	// loop accepting
 	for {
 		conn, err := lis.AcceptKCP()
 		if err != nil {
-			log.Warning("accept failed:", err)
+			log.Logger().Warn("accept failed:", err)
 			continue
 		}
 		// set kcp parameters
@@ -105,10 +105,8 @@ func udpServer(config *Config) {
 //
 func handleClient(conn net.Conn, config *Config) {
 	defer conn.Close()
-	// for reading the 2-Byte header
-	header := make([]byte, 2)
 	// the input channel for agent()
-	in := make(chan []byte)
+	in := make(chan *netPackages.NetPackage)
 	defer func() {
 		close(in) // session will close
 	}()
@@ -118,11 +116,11 @@ func handleClient(conn net.Conn, config *Config) {
 	var sess agent_server.Session
 	host, port, err := net.SplitHostPort(conn.RemoteAddr().String())
 	if err != nil {
-		log.Error("cannot get remote address:", err)
+		log.Logger().Error("cannot get remote address:", err)
 		return
 	}
 	sess.IP = net.ParseIP(host)
-	log.Infof("new connection from:%v port:%v", host, port)
+	log.Logger().Infof("new connection from:%v port:%v", host, port)
 
 	// session die signal, will be triggered by agent()
 	sess.Die = make(chan struct{})
@@ -142,19 +140,23 @@ func handleClient(conn net.Conn, config *Config) {
 		// will cause the read to block FOREVER, so a timeout is a rescue.
 		conn.SetReadDeadline(time.Now().Add(config.ReadDeadline))
 
-		// read 2B header
-		n, err := io.ReadFull(conn, header)
+		// alloc a byte slice of the size defined in the header for reading data
+		readBytes := make([]byte, netPackages.PACKET_LIMIT)
+		n, err := io.ReadFull(conn, readBytes)
 		if err != nil {
-			log.Warningf("read header failed, ip:%v reason:%v size:%v", sess.IP, err, n)
+			log.Logger().Warnf("read readBytes failed, ip:%v reason:%v size:%v", sess.IP, err, n)
 			return
 		}
-		size := binary.BigEndian.Uint16(header)
 
-		// alloc a byte slice of the size defined in the header for reading data
-		payload := make([]byte, size)
-		n, err = io.ReadFull(conn, payload)
+		// 解密
+		if sess.Flag&agent_server.SESS_ENCRYPT != 0 {
+			sess.Decoder.XORKeyStream(readBytes, readBytes)
+		}
+
+		// 转化为package
+		payload, err := netPackages.BytesToNetPackage(readBytes)
 		if err != nil {
-			log.Warningf("read payload failed, ip:%v reason:%v size:%v", sess.IP, err, n)
+			log.Logger().Errorf("read payload faild, err :%v", err.Error())
 			return
 		}
 
@@ -162,7 +164,7 @@ func handleClient(conn net.Conn, config *Config) {
 		select {
 		case in <- payload: // payload queued
 		case <-sess.Die:
-			log.Warningf("connection closed by logic, flag:%v ip:%v", sess.Flag, sess.IP)
+			log.Logger().Warnf("connection closed by logic, flag:%v ip:%v", sess.Flag, sess.IP)
 			return
 		}
 	}
@@ -185,9 +187,9 @@ func sig_handler(wg *sync.WaitGroup) {
 		switch msg {
 		case syscall.SIGTERM: // 关闭agent
 			close(shuttingDownChan)
-			log.Info("sigterm received")
-			log.Info("waiting for agents close, please wait...")
-			log.Info("agent shutdown.")
+			log.Logger().Info("sigterm received")
+			log.Logger().Info("waiting for agents close, please wait...")
+			log.Logger().Info("agent shutdown.")
 			wg.Done()
 		}
 	}
