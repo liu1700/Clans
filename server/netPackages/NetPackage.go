@@ -14,8 +14,8 @@ const (
 type NetPackage struct {
 	PacketId  uint8
 	Version   uint8
-	HandlerId uint8
 	SeqId     uint32
+	HandlerId uint8
 	Data      []byte
 }
 
@@ -61,7 +61,7 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 
 	//	fmt.Printf("Handler ID %d \n", handerId)
 
-	verIndex := packetIdEnd + 1
+	verIndex := packetIdEnd
 
 	// if verIndex > iSize {
 	// 	// return nil, 0, errors.New(fmt.Sprintf(" verIndex > iSize"))
@@ -71,14 +71,14 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	version := uint8(byteSlice[verIndex])
 	//			fmt.Printf("Version %d \n", version)
 
-	seqStart := verIndex
+	seqStart := verIndex + 1
 	seqEnd := seqStart + 4
 	seqData := binary.BigEndian.Uint32(byteSlice[seqStart:seqEnd])
 
-	handlerIndex := seqEnd + 1
+	handlerIndex := seqEnd
 	handlerId := uint8(byteSlice[handlerIndex])
 
-	sizeStart := handlerIndex
+	sizeStart := handlerIndex + 1
 	sizeEnd := sizeStart + 4
 
 	// if length < uint32(i)+minimalPackageSize {
@@ -106,15 +106,21 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	// fmt.Println(suffixIndex)
 	// fmt.Println(byteSlice[suffixIndex])
 
+	// 客户端均为大端序传输
 	data := byteSlice[dataStart:dataEnd]
 
-	cloneData := make([]byte, len(data))
-	copy(cloneData, data)
+	// flatbuffer需要小端序数据
+	for i := len(data)/2 - 1; i >= 0; i-- {
+		opp := len(data) - 1 - i
+		data[i], data[opp] = data[opp], data[i]
+	}
+
 	pack = &NetPackage{
 		PacketId:  packetId,
 		Version:   version,
 		SeqId:     seqData,
 		HandlerId: handlerId,
-		Data:      cloneData}
+		Data:      data,
+	}
 	return pack, nil
 }

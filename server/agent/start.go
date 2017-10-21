@@ -4,7 +4,6 @@ import (
 	"Clans/server/agent/agent_server"
 	"Clans/server/log"
 	"Clans/server/netPackages"
-	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -160,7 +159,7 @@ func handleClient(conn net.Conn, config *Config) {
 			return
 		}
 
-		fmt.Println(*payload)
+		log.Logger().Debugf("%+v \n", *payload)
 
 		// deliver the data to the input queue of agent()
 		select {

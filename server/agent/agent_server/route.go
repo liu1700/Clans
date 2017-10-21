@@ -1,6 +1,7 @@
 package agent_server
 
 import (
+	"Clans/server/flats"
 	"Clans/server/log"
 	"Clans/server/netPackages"
 )
@@ -28,9 +29,9 @@ func route(sess *Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
 			// }
 		} else {
 			if h := ReqHandler[pack.HandlerId]; h != nil {
-				log.Logger().Debugf("processing request id %d ", pack.HandlerId)
-				h(sess, outBuffer)
-				log.Logger().Debugf("finishing request id %d ", pack.HandlerId)
+				log.Logger().Debugf("processing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
+				h(sess, pack, outBuffer)
+				log.Logger().Debugf("finishing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
 			}
 			// if h := client_handler.Handlers[b]; h != nil {
 			// 	ret = h(sess, reader)
