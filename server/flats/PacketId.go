@@ -4,12 +4,14 @@ package flats
 
 const (
 	PacketIdNone = 0
-	PacketIdLogin = 1
-	PacketIdGame = 2
+	PacketIdHeartBeat = 1
+	PacketIdLogin = 2
+	PacketIdGame = 3
 )
 
 var EnumNamesPacketId = map[int]string{
 	PacketIdNone:"None",
+	PacketIdHeartBeat:"HeartBeat",
 	PacketIdLogin:"Login",
 	PacketIdGame:"Game",
 }

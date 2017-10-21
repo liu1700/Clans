@@ -1,6 +1,7 @@
 package agent_server
 
 import (
+	"Clans/server/flats"
 	"Clans/server/log"
 	"Clans/server/netPackages"
 	"sync"
@@ -48,10 +49,15 @@ func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in
 			sess.PacketCount++
 			sess.PacketCount1Min++
 			sess.PacketTime = time.Now()
-
-			route(sess, msg, out)
-
 			sess.LastPacketTime = sess.PacketTime
+
+			// 如果是心跳包则不处理,直接写回
+			if msg.PacketId != flats.PacketIdHeartBeat {
+				route(sess, msg, out)
+			} else {
+				out.rawSend(netPackages.HeartBeatPacket())
+			}
+
 		// case frame := <-sess.MQ: // packets from game
 		// 	switch frame.Type {
 		// 	case pb.Game_Message:

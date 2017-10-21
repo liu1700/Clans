@@ -1,10 +1,9 @@
 package netPackages
 
 import (
+	"Clans/server/flats"
 	"bytes"
 	"encoding/binary"
-	"errors"
-	"fmt"
 )
 
 const (
@@ -32,12 +31,16 @@ func (p *NetPackage) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
-	minimalPackageSize := uint32(12)
-	length := uint32(len(byteSlice))
-	if length < minimalPackageSize {
-		return nil, errors.New(fmt.Sprintf("Data size  %d is less than mimial size ", length))
-	}
+func HeartBeatPacket() []byte {
+	return []byte{flats.PacketIdHeartBeat}
+}
+
+func BytesToNetPackage(byteSlice []byte) (*NetPackage, error) {
+	// minimalPackageSize := uint32(12)
+	// length := uint32(len(byteSlice))
+	// if length < minimalPackageSize {
+	// 	return nil, errors.New(fmt.Sprintf("Data size  %d is less than mimial size ", length))
+	// }
 
 	// iSize := uint32(length - 1)
 	// fmt.Println("iiiiiiiiiiiiiii")
@@ -74,6 +77,18 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 	seqStart := verIndex + 1
 	seqEnd := seqStart + 4
 	seqData := binary.BigEndian.Uint32(byteSlice[seqStart:seqEnd])
+
+	// 心跳包直接返回
+	if packetId == flats.PacketIdHeartBeat {
+		pack := &NetPackage{
+			PacketId:  packetId,
+			Version:   version,
+			SeqId:     seqData,
+			HandlerId: 0,
+			Data:      []byte{},
+		}
+		return pack, nil
+	}
 
 	handlerIndex := seqEnd
 	handlerId := uint8(byteSlice[handlerIndex])
@@ -115,7 +130,7 @@ func BytesToNetPackage(byteSlice []byte) (pack *NetPackage, err error) {
 		data[i], data[opp] = data[opp], data[i]
 	}
 
-	pack = &NetPackage{
+	pack := &NetPackage{
 		PacketId:  packetId,
 		Version:   version,
 		SeqId:     seqData,

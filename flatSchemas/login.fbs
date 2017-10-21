@@ -4,3 +4,7 @@ table RqLogin {
     name:string;
     password:string;
 }
+
+table RpLogin {
+    name:string;
+}

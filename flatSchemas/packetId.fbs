@@ -2,6 +2,7 @@ namespace flats;
 
 enum PacketId:byte {
     None = 0,
-    Login = 1,
-    Game = 2
+    HeartBeat = 1,
+    Login = 2,
+    Game = 3
 }
