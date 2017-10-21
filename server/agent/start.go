@@ -21,6 +21,8 @@ const (
 var (
 	Wg               sync.WaitGroup
 	shuttingDownChan = make(chan struct{})
+
+	Version int
 )
 
 type Config struct {
@@ -204,6 +206,9 @@ func Start(config *Config) {
 	log.InitLogger(log.DEV)
 
 	agent_server.SetRpmLimit(config.RpmLimit)
+
+	// need get from db
+	agent_server.SetVersion(1)
 
 	// listeners
 	go tcpServer(config)

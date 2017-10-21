@@ -4,3 +4,8 @@ enum RequestId:byte {
     None = 0,
     Login = 10
 }
+
+enum ReponseId:byte {
+    None = 0,
+    Login = 10
+}

@@ -24,5 +24,5 @@ func RqUserLogin(sess *Session, pack *netPackages.NetPackage, outBuffer *Buffer)
 	rp := flats.RpLoginEnd(builder)
 	builder.Finish(rp)
 
-	outBuffer.send(sess, builder.FinishedBytes())
+	outBuffer.send(sess, flats.ReponseIdLogin, pack, builder.FinishedBytes())
 }

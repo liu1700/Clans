@@ -2,6 +2,7 @@ package agent_server
 
 import (
 	"Clans/server/log"
+	"Clans/server/netPackages"
 	"net"
 )
 
@@ -15,20 +16,25 @@ type Buffer struct {
 }
 
 // packet sending procedure
-func (buf *Buffer) send(sess *Session, data []byte) {
+func (buf *Buffer) send(sess *Session, respId int, srcPack *netPackages.NetPackage, sendData []byte) {
 
 	// encryption
 	// (NOT_ENCRYPTED) -> KEYEXCG -> ENCRYPT
 	if sess.Flag&SESS_ENCRYPT != 0 { // encryption is enabled
-		sess.Encoder.XORKeyStream(data, data)
+		sess.Encoder.XORKeyStream(sendData, sendData)
 	} else if sess.Flag&SESS_KEYEXCG != 0 { // key is exchanged, encryption is not yet enabled
 		sess.Flag &^= SESS_KEYEXCG
 		sess.Flag |= SESS_ENCRYPT
 	}
 
+	// 更新数据包的数据内容
+	srcPack.HandlerId = byte(respId)
+	srcPack.Version = version
+	srcPack.Data = sendData
+
 	// queue the data for sending
 	select {
-	case buf.pending <- data:
+	case buf.pending <- srcPack.Bytes():
 	default: // packet will be dropped if txqueuelen exceeds
 		log.Logger().Warnf("userid %d ip %s", sess.UserId, sess.IP)
 	}
@@ -53,14 +59,6 @@ func (buf *Buffer) rawSend(data []byte) bool {
 	// sz := len(data)
 	// binary.BigEndian.PutUint16(buf.cache, uint16(sz))
 	// copy(buf.cache[2:], data)
-
-	// pack := &netPackages.NetPackage{
-	// 	PacketId
-	// 	Version   uint8
-	// 	SeqId     uint32
-	// 	HandlerId uint8
-	// 	Data      []byte
-	// }
 
 	// write data
 	n, err := buf.conn.Write(data)

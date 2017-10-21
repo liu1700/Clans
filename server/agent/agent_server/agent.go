@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	rpmLimit = 0
+	rpmLimit       = 0
+	version  uint8 = 0
 )
 
 // PIPELINE #2: agent
@@ -81,6 +82,10 @@ func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in
 
 func SetRpmLimit(limit int) {
 	rpmLimit = limit
+}
+
+func SetVersion(v int) {
+	version = uint8(v)
 }
 
 // 玩家1分钟定时器
