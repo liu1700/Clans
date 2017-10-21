@@ -2,8 +2,6 @@ package agent_server
 
 import (
 	"Clans/server/log"
-	"Clans/server/netPackages"
-	"encoding/binary"
 	"net"
 )
 
@@ -13,7 +11,7 @@ type Buffer struct {
 	ctrl    chan struct{} // receive exit signal
 	pending chan []byte   // pending packets
 	conn    net.Conn      // connection
-	cache   []byte        // for combined syscall write
+	// cache   []byte        // for combined syscall write
 }
 
 // packet sending procedure
@@ -51,13 +49,21 @@ func (buf *Buffer) Start() {
 
 // raw packet encapsulation and put it online
 func (buf *Buffer) rawSend(data []byte) bool {
-	// combine output to reduce syscall.write
-	sz := len(data)
-	binary.BigEndian.PutUint16(buf.cache, uint16(sz))
-	copy(buf.cache[2:], data)
+	// // combine output to reduce syscall.write
+	// sz := len(data)
+	// binary.BigEndian.PutUint16(buf.cache, uint16(sz))
+	// copy(buf.cache[2:], data)
+
+	// pack := &netPackages.NetPackage{
+	// 	PacketId
+	// 	Version   uint8
+	// 	SeqId     uint32
+	// 	HandlerId uint8
+	// 	Data      []byte
+	// }
 
 	// write data
-	n, err := buf.conn.Write(buf.cache[:sz+2])
+	n, err := buf.conn.Write(data)
 	if err != nil {
 		log.Logger().Warnf("Error send reply data, bytes: %v reason: %v", n, err)
 		return false
@@ -71,6 +77,6 @@ func NewBuffer(conn net.Conn, ctrl chan struct{}, txqueuelen int) *Buffer {
 	buf := Buffer{conn: conn}
 	buf.pending = make(chan []byte, txqueuelen)
 	buf.ctrl = ctrl
-	buf.cache = make([]byte, netPackages.PACKET_LIMIT+2)
+	// buf.cache = make([]byte, netPackages.PACKET_LIMIT+2)
 	return &buf
 }
