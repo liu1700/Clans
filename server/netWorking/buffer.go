@@ -1,9 +1,7 @@
-package agent_server
+package netWorking
 
 import (
 	"Clans/server/log"
-	"Clans/server/netPackages"
-	"Clans/server/netWorking"
 	"net"
 )
 
@@ -16,38 +14,12 @@ type Buffer struct {
 	// cache   []byte        // for combined syscall write
 }
 
-// packet sending procedure
-func (buf *Buffer) send(sess *netWorking.Session, respId int, srcPack *netPackages.NetPackage, sendData []byte) {
-
-	// encryption
-	// (NOT_ENCRYPTED) -> KEYEXCG -> ENCRYPT
-	if sess.Flag&netWorking.SESS_ENCRYPT != 0 { // encryption is enabled
-		sess.Encoder.XORKeyStream(sendData, sendData)
-	} else if sess.Flag&netWorking.SESS_KEYEXCG != 0 { // key is exchanged, encryption is not yet enabled
-		sess.Flag &^= netWorking.SESS_KEYEXCG
-		sess.Flag |= netWorking.SESS_ENCRYPT
-	}
-
-	// 更新数据包的数据内容
-	srcPack.HandlerId = byte(respId)
-	srcPack.Version = version
-	srcPack.Data = sendData
-
-	// queue the data for sending
-	select {
-	case buf.pending <- srcPack.Bytes():
-	default: // packet will be dropped if txqueuelen exceeds
-		log.Logger().Warnf("userid %d ip %s", sess.UserId, sess.IP)
-	}
-	return
-}
-
 // packet sending goroutine
 func (buf *Buffer) Start() {
 	for {
 		select {
 		case data := <-buf.pending:
-			buf.rawSend(data)
+			buf.RawSend(data)
 		case <-buf.ctrl: // receive session end signal
 			return
 		}
@@ -55,7 +27,7 @@ func (buf *Buffer) Start() {
 }
 
 // raw packet encapsulation and put it online
-func (buf *Buffer) rawSend(data []byte) bool {
+func (buf *Buffer) RawSend(data []byte) bool {
 	// // combine output to reduce syscall.write
 	// sz := len(data)
 	// binary.BigEndian.PutUint16(buf.cache, uint16(sz))

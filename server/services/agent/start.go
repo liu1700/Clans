@@ -52,12 +52,14 @@ func handleClient(conn net.Conn, config *services.Config) {
 	sess.Die = make(chan struct{})
 
 	// create a write buffer
-	out := agent_server.NewBuffer(conn, sess.Die, config.Txqueuelen)
+	out := netWorking.NewBuffer(conn, sess.Die, config.Txqueuelen)
 	go out.Start()
 
 	// start agent for PACKET processing
 	Wg.Add(1)
 	go agent_server.Agent(&sess, shuttingDownChan, &Wg, in, out)
+
+	sess.OutBuffer = out
 
 	// read loop
 	readBytes := make([]byte, netPackages.PACKET_LIMIT)
@@ -120,9 +122,12 @@ func Start(config *services.Config) {
 	// need get from db
 	agent_server.SetVersion(1)
 
+	server := new(netWorking.Server)
+	server.InitServer(config)
+
 	// listeners
-	go netWorking.TcpServer(config, handleClient)
-	go netWorking.UdpServer(config, handleClient)
+	go server.TcpServer(handleClient)
+	go server.UdpServer(handleClient)
 
 	Wg.Wait()
 

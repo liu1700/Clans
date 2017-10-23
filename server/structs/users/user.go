@@ -9,7 +9,7 @@ import (
 )
 
 type User struct {
-	ID        uint `gorm:"primary_key"`
+	ID        uint32 `gorm:"primary_key"`
 	CreatedAt int64
 	UpdatedAt int64
 	Name      string

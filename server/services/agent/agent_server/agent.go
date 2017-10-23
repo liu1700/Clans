@@ -16,11 +16,10 @@ var (
 
 // PIPELINE #2: agent
 // all the packets from handleClient() will be handled
-func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.NetPackage, out *Buffer) {
+func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.NetPackage, out *netWorking.Buffer) {
 	defer wg.Done() // will decrease waitgroup by one, useful for manual server shutdown
 
 	// init session
-	// sess.MQ = make(chan pb.Game_Frame, 512)
 	sess.ConnectTime = time.Now()
 	sess.LastPacketTime = time.Now()
 
@@ -55,9 +54,9 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 
 			// 如果是心跳包则不处理,直接写回
 			if msg.PacketId != flats.PacketIdHeartBeat {
-				route(sess, msg, out)
+				route(sess, msg)
 			} else {
-				out.rawSend(netPackages.HeartBeatPacket())
+				out.RawSend(netPackages.HeartBeatPacket())
 			}
 
 		// case frame := <-sess.MQ: // packets from game
@@ -68,7 +67,7 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 		// 		sess.Flag |= SESS_KICKED_OUT
 		// 	}
 		case <-min_timer: // minutes timer
-			timerWork(sess, out)
+			timerWork(sess)
 			min_timer = time.After(time.Minute)
 		case <-shuttingDownChan: // server is shuting down...
 			sess.Flag |= netWorking.SESS_KICKED_OUT
@@ -90,7 +89,7 @@ func SetVersion(v int) {
 }
 
 // 玩家1分钟定时器
-func timerWork(sess *netWorking.Session, out *Buffer) {
+func timerWork(sess *netWorking.Session) {
 	defer func() {
 		sess.PacketCount1Min = 0
 	}()

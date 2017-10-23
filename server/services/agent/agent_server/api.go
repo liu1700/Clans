@@ -6,6 +6,6 @@ import (
 	"Clans/server/netWorking"
 )
 
-var ReqHandler = map[uint8]func(sess *netWorking.Session, pack *netPackages.NetPackage, outBuffer *Buffer){
+var ReqHandler = map[uint8]func(sess *netWorking.Session, pack *netPackages.NetPackage){
 	flats.RequestIdLogin: RqUserLogin,
 }

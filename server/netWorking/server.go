@@ -4,6 +4,9 @@ import (
 	"Clans/server/log"
 	"Clans/server/services"
 	"Clans/server/utils"
+	"errors"
+	"fmt"
+	"time"
 
 	"net"
 
@@ -12,7 +15,20 @@ import (
 
 type ClientHandler func(conn net.Conn, conf *services.Config)
 
-func TcpServer(config *services.Config, handleClient ClientHandler) {
+type Server struct {
+	ServiceConnGroups map[string]map[string]net.Conn // 服务类型 -> 服务实例id -> 具体链接
+	Config            *services.Config
+	Clients           map[uint32]*Session
+}
+
+func (s *Server) InitServer(conf *services.Config) {
+	s.ServiceConnGroups = make(map[string]map[string]net.Conn)
+	s.Config = conf
+}
+
+func (s *Server) TcpServer(handleClient ClientHandler) {
+	config := s.Config
+
 	// resolve address & start listening
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", config.Listen)
 	utils.CheckError(err)
@@ -38,7 +54,9 @@ func TcpServer(config *services.Config, handleClient ClientHandler) {
 	}
 }
 
-func UdpServer(config *services.Config, handleClient ClientHandler) {
+func (s *Server) UdpServer(handleClient ClientHandler) {
+	config := s.Config
+
 	l, err := kcp.Listen(config.Listen)
 	utils.CheckError(err)
 
@@ -73,4 +91,28 @@ func UdpServer(config *services.Config, handleClient ClientHandler) {
 		// start a goroutine for every incoming connection for reading
 		go handleClient(conn, config)
 	}
+}
+
+func (s *Server) AddService(ip string, port int, serviceName string, serviceId string) (net.Conn, error) {
+	retry, retryMax, retryDuration := 0, 5, time.Duration(2)
+
+	for retry < retryMax {
+		conn, err := kcp.Dial(fmt.Sprintf("%s:%d", ip, port))
+		if err != nil {
+			log.Logger().Warnf("dial kcp service ip:%s, port:%d, for %d time(s), reason:%s", ip, port, retry, err.Error())
+			retry++
+			time.Sleep(retryDuration)
+		} else {
+			serviceGroup := s.ServiceConnGroups[serviceName]
+			if serviceGroup == nil {
+				serviceGroup = make(map[string]net.Conn)
+			}
+			serviceGroup[serviceId] = conn
+
+			s.ServiceConnGroups[serviceName] = serviceGroup
+			return conn, nil
+		}
+	}
+
+	return nil, errors.New("dial remote server err")
 }

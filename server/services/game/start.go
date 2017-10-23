@@ -36,8 +36,11 @@ func Start(config *services.Config) {
 
 	go utils.SigHandler(&Wg, shuttingDownChan)
 
+	server := new(netWorking.Server)
+	server.InitServer(config)
+
 	// listeners
-	go netWorking.UdpServer(config, handleClient)
+	go server.UdpServer(handleClient)
 
 	Wg.Wait()
 

@@ -8,7 +8,7 @@ import (
 )
 
 // route client protocol
-func route(sess *netWorking.Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
+func route(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	if pack != nil {
 		// 读客户端数据包序列号(1,2,3...)
 		// 客户端发送的数据包必须包含一个自增的序号，必须严格递增
@@ -31,7 +31,7 @@ func route(sess *netWorking.Session, pack *netPackages.NetPackage, outBuffer *Bu
 		} else {
 			if h := ReqHandler[pack.HandlerId]; h != nil {
 				log.Logger().Debugf("processing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
-				h(sess, pack, outBuffer)
+				h(sess, pack)
 				log.Logger().Debugf("finishing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
 			}
 			// if h := client_handler.Handlers[b]; h != nil {

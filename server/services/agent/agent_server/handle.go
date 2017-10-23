@@ -5,22 +5,22 @@ import (
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
 	"Clans/server/structs/users"
-	"fmt"
 
 	"github.com/google/flatbuffers/go"
 )
 
-func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
+func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	rq := flats.GetRootAsRqLogin(pack.Data, 0)
 
 	name := string(rq.Name())
 	pw := string(rq.Password())
 
-	fmt.Println("name: ", name, " password ", pw)
-
-	if u := users.FindUserByName(name); u == nil {
-		users.CreateUser(name, pw)
+	u := users.FindUserByName(name)
+	if u == nil {
+		u = users.CreateUser(name, pw)
 	}
+
+	sess.UserId = u.ID
 
 	builder := flatbuffers.NewBuilder(0)
 	rpName := builder.CreateByteString(rq.Name())
@@ -30,5 +30,5 @@ func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage, outBuff
 	rp := flats.RpLoginEnd(builder)
 	builder.Finish(rp)
 
-	outBuffer.send(sess, flats.ReponseIdLogin, pack, builder.FinishedBytes())
+	sess.Write(flats.ReponseIdLogin, pack, builder.FinishedBytes())
 }

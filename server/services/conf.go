@@ -2,6 +2,11 @@ package services
 
 import "time"
 
+const (
+	GAME_SERVICE = "game"
+	CHAT_SERVICE = "chat"
+)
+
 type Config struct {
 	Listen                        string
 	ReadDeadline                  time.Duration
