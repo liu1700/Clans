@@ -4,6 +4,7 @@ import (
 	"Clans/server/flats"
 	"Clans/server/log"
 	"Clans/server/netPackages"
+	"Clans/server/netWorking"
 	"sync"
 	"time"
 )
@@ -15,7 +16,7 @@ var (
 
 // PIPELINE #2: agent
 // all the packets from handleClient() will be handled
-func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.NetPackage, out *Buffer) {
+func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.NetPackage, out *Buffer) {
 	defer wg.Done() // will decrease waitgroup by one, useful for manual server shutdown
 
 	// init session
@@ -70,11 +71,11 @@ func Agent(sess *Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in
 			timerWork(sess, out)
 			min_timer = time.After(time.Minute)
 		case <-shuttingDownChan: // server is shuting down...
-			sess.Flag |= SESS_KICKED_OUT
+			sess.Flag |= netWorking.SESS_KICKED_OUT
 		}
 
 		// see if the player should be kicked out.
-		if sess.Flag&SESS_KICKED_OUT != 0 {
+		if sess.Flag&netWorking.SESS_KICKED_OUT != 0 {
 			return
 		}
 	}
@@ -89,14 +90,14 @@ func SetVersion(v int) {
 }
 
 // 玩家1分钟定时器
-func timerWork(sess *Session, out *Buffer) {
+func timerWork(sess *netWorking.Session, out *Buffer) {
 	defer func() {
 		sess.PacketCount1Min = 0
 	}()
 
 	// 发包频率控制，太高的RPS直接踢掉
 	if sess.PacketCount1Min > rpmLimit {
-		sess.Flag |= SESS_KICKED_OUT
+		sess.Flag |= netWorking.SESS_KICKED_OUT
 		log.Logger().Errorf("userid %d, packet in 1m %d, total %d", sess.UserId, sess.PacketCount1Min, sess.PacketCount)
 		return
 	}

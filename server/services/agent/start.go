@@ -39,7 +39,7 @@ func handleClient(conn net.Conn, config *services.Config) {
 
 	// create a new session object for the connection
 	// and record it's IP address
-	var sess agent_server.Session
+	var sess netWorking.Session
 	host, port, err := net.SplitHostPort(conn.RemoteAddr().String())
 	if err != nil {
 		log.Logger().Error("cannot get remote address:", err)
@@ -75,7 +75,7 @@ func handleClient(conn net.Conn, config *services.Config) {
 		}
 
 		// 解密
-		if sess.Flag&agent_server.SESS_ENCRYPT != 0 {
+		if sess.Flag&netWorking.SESS_ENCRYPT != 0 {
 			sess.Decoder.XORKeyStream(readBytes, readBytes)
 		}
 

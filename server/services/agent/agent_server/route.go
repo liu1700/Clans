@@ -4,10 +4,11 @@ import (
 	"Clans/server/flats"
 	"Clans/server/log"
 	"Clans/server/netPackages"
+	"Clans/server/netWorking"
 )
 
 // route client protocol
-func route(sess *Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
+func route(sess *netWorking.Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
 	if pack != nil {
 		// 读客户端数据包序列号(1,2,3...)
 		// 客户端发送的数据包必须包含一个自增的序号，必须严格递增
@@ -15,7 +16,7 @@ func route(sess *Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
 		// 数据包序列号验证
 		if pack.SeqId != sess.PacketCount {
 			log.Logger().Errorf("illegal packet sequence id:%v should be:%v size:%v", pack.SeqId, sess.PacketCount, len(pack.Data))
-			sess.Flag |= SESS_KICKED_OUT
+			sess.Flag |= netWorking.SESS_KICKED_OUT
 			return
 		}
 

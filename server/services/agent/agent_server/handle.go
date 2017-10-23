@@ -3,13 +3,14 @@ package agent_server
 import (
 	"Clans/server/flats"
 	"Clans/server/netPackages"
+	"Clans/server/netWorking"
 	"Clans/server/structs/users"
 	"fmt"
 
 	"github.com/google/flatbuffers/go"
 )
 
-func RqUserLogin(sess *Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
+func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage, outBuffer *Buffer) {
 	rq := flats.GetRootAsRqLogin(pack.Data, 0)
 
 	name := string(rq.Name())

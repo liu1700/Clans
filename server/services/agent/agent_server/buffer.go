@@ -3,6 +3,7 @@ package agent_server
 import (
 	"Clans/server/log"
 	"Clans/server/netPackages"
+	"Clans/server/netWorking"
 	"net"
 )
 
@@ -16,15 +17,15 @@ type Buffer struct {
 }
 
 // packet sending procedure
-func (buf *Buffer) send(sess *Session, respId int, srcPack *netPackages.NetPackage, sendData []byte) {
+func (buf *Buffer) send(sess *netWorking.Session, respId int, srcPack *netPackages.NetPackage, sendData []byte) {
 
 	// encryption
 	// (NOT_ENCRYPTED) -> KEYEXCG -> ENCRYPT
-	if sess.Flag&SESS_ENCRYPT != 0 { // encryption is enabled
+	if sess.Flag&netWorking.SESS_ENCRYPT != 0 { // encryption is enabled
 		sess.Encoder.XORKeyStream(sendData, sendData)
-	} else if sess.Flag&SESS_KEYEXCG != 0 { // key is exchanged, encryption is not yet enabled
-		sess.Flag &^= SESS_KEYEXCG
-		sess.Flag |= SESS_ENCRYPT
+	} else if sess.Flag&netWorking.SESS_KEYEXCG != 0 { // key is exchanged, encryption is not yet enabled
+		sess.Flag &^= netWorking.SESS_KEYEXCG
+		sess.Flag |= netWorking.SESS_ENCRYPT
 	}
 
 	// 更新数据包的数据内容
