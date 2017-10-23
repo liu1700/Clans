@@ -2,8 +2,10 @@ package agent
 
 import (
 	"Clans/server/agent/agent_server"
+	"Clans/server/db"
 	"Clans/server/log"
 	"Clans/server/netPackages"
+	"Clans/server/structs/users"
 	"net"
 	"os"
 	"os/signal"
@@ -198,12 +200,22 @@ func sig_handler(wg *sync.WaitGroup) {
 	}
 }
 
+// 不同的服务器需要关心的结构体不同，所以将初始化表的操作拿到db之外
+func InitDBTables() {
+	// AutoMigrate 只做新增操作，不会修改原有数据，不修改旧记录的数据类型，不删除旧记录的无用字段
+	db.DB().AutoMigrate(&users.User{})
+}
+
 func Start(config *Config) {
 	Wg.Add(1)
+	log.InitLogger(log.DEV)
+
+	db.InitDB("139.162.96.106", 3306, "root", "root", "runaway")
+	db.CheckConnecting()
+
+	InitDBTables()
 
 	go sig_handler(&Wg)
-
-	log.InitLogger(log.DEV)
 
 	agent_server.SetRpmLimit(config.RpmLimit)
 

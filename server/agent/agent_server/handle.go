@@ -3,6 +3,7 @@ package agent_server
 import (
 	"Clans/server/flats"
 	"Clans/server/netPackages"
+	"Clans/server/structs/users"
 	"fmt"
 
 	"github.com/google/flatbuffers/go"
@@ -15,6 +16,10 @@ func RqUserLogin(sess *Session, pack *netPackages.NetPackage, outBuffer *Buffer)
 	pw := string(rq.Password())
 
 	fmt.Println("name: ", name, " password ", pw)
+
+	if u := users.FindUserByName(name); u == nil {
+		users.CreateUser(name, pw)
+	}
 
 	builder := flatbuffers.NewBuilder(0)
 	rpName := builder.CreateByteString(rq.Name())
