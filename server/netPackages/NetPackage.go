@@ -121,7 +121,7 @@ func BytesToNetPackage(byteSlice []byte) (*NetPackage, error) {
 	// fmt.Println(suffixIndex)
 	// fmt.Println(byteSlice[suffixIndex])
 
-	// 客户端均为大端序传输
+	// 网络均为大端序传输
 	data := byteSlice[dataStart:dataEnd]
 
 	// flatbuffer需要小端序数据

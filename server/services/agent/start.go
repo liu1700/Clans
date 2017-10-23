@@ -2,6 +2,7 @@ package agent
 
 import (
 	"Clans/server/db"
+	"Clans/server/flats"
 	"Clans/server/log"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
@@ -64,7 +65,14 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 	sess.OutBuffer = out
 
 	id := atomic.AddUint64(&s.ClientsId, 1)
+
 	s.Clients[id] = sess
+
+	sess.ServerInst = s
+
+	// 获取游戏逻辑服务
+	service := s.GetService(flats.PacketIdGame, 1)
+	sess.GameService = service
 
 	defer func() {
 		close(in) // session will close
@@ -138,6 +146,10 @@ func Start(config *services.Config) {
 	// listeners
 	go server.TcpServer(handleClient)
 	go server.UdpServer(handleClient)
+
+	// 其他游戏服务监听
+	// 游戏主逻辑,也就是房间服务
+	server.AddService("192.168.1.102", 9080, flats.PacketIdGame, 1)
 
 	Wg.Wait()
 

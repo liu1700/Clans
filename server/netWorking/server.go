@@ -1,6 +1,7 @@
 package netWorking
 
 import (
+	"Clans/server/flats"
 	"Clans/server/log"
 	"Clans/server/services"
 	"Clans/server/utils"
@@ -16,14 +17,15 @@ import (
 type ClientHandler func(conn net.Conn, s *Server)
 
 type Server struct {
-	ServiceConnGroups map[string]map[string]net.Conn // 服务类型 -> 服务实例id -> 具体链接
+	ServiceConnGroups map[int]map[int]*Service // 服务类型 -> 服务实例id -> 实例
 	Config            *services.Config
 	ClientsId         uint64
 	Clients           map[uint64]*Session
+	// ClientsMap        map[int]map[int]map[uint64]bool // 服务类型 -> 服务实例id -> clientId -> 是否存在
 }
 
 func (s *Server) InitServer(conf *services.Config) {
-	s.ServiceConnGroups = make(map[string]map[string]net.Conn)
+	s.ServiceConnGroups = make(map[int]map[int]*Service)
 	s.Clients = make(map[uint64]*Session)
 	s.Config = conf
 }
@@ -96,9 +98,10 @@ func (s *Server) UdpServer(handleClient ClientHandler) {
 	}
 }
 
-func (s *Server) AddService(ip string, port int, serviceName string, serviceId string) (net.Conn, error) {
+func (s *Server) AddService(ip string, port int, serviceName int, serviceId int) (net.Conn, error) {
 	retry, retryMax, retryDuration := 0, 5, time.Duration(2)
 
+	log.Logger().Debugf("adding service name:%s, id:%d", flats.EnumNamesPacketId[serviceName], serviceId)
 	for retry < retryMax {
 		conn, err := kcp.Dial(fmt.Sprintf("%s:%d", ip, port))
 		if err != nil {
@@ -106,11 +109,16 @@ func (s *Server) AddService(ip string, port int, serviceName string, serviceId s
 			retry++
 			time.Sleep(retryDuration)
 		} else {
+			// log.Logger().Debug("connection:", conn.LocalAddr(), "->", conn.RemoteAddr())
+
 			serviceGroup := s.ServiceConnGroups[serviceName]
 			if serviceGroup == nil {
-				serviceGroup = make(map[string]net.Conn)
+				serviceGroup = make(map[int]*Service)
 			}
-			serviceGroup[serviceId] = conn
+
+			service := InitService(conn, s, serviceName, serviceId)
+
+			serviceGroup[serviceId] = service
 
 			s.ServiceConnGroups[serviceName] = serviceGroup
 			return conn, nil
@@ -118,4 +126,11 @@ func (s *Server) AddService(ip string, port int, serviceName string, serviceId s
 	}
 
 	return nil, errors.New("dial remote server err")
+}
+
+func (s *Server) GetService(serviceName int, serviceId int) *Service {
+	if groups := s.ServiceConnGroups[serviceName]; groups != nil {
+		return groups[serviceId]
+	}
+	return nil
 }

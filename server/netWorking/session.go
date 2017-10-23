@@ -18,13 +18,15 @@ const (
 type Session struct {
 	IP net.IP
 	// MQ      chan *netPackages.NetPackage // 返回给客户端的异步消息
-	Encoder *rc4.Cipher // 加密器
-	Decoder *rc4.Cipher // 解密器
-	UserId  uint32      // 玩家ID
-	GSID    string      // 游戏服ID;e.g.: game1,game2
+	Encoder       *rc4.Cipher // 加密器
+	Decoder       *rc4.Cipher // 解密器
+	UserId        uint32      // 玩家ID
+	GameServiceId int         // 游戏服ID;游戏服的id
 	// Stream  net.Conn                     // 后端游戏服数据流
-	Die       chan struct{} // 会话关闭信号
-	OutBuffer *Buffer       // 写回数据用的buffer
+	GameService *Service      // 游戏服务,也就是房间服务
+	Die         chan struct{} // 会话关闭信号
+	OutBuffer   *Buffer       // 写回数据用的buffer
+	ServerInst  *Server       // 服务实例
 
 	// 会话标记
 	Flag int32
@@ -61,4 +63,8 @@ func (s *Session) Write(respId int, srcPack *netPackages.NetPackage, sendData []
 		log.Logger().Warnf("userid %d ip %s", s.UserId, s.IP)
 	}
 	return
+}
+
+func (s *Session) GetService(serviceName int, serviceId int) *Service {
+	return s.ServerInst.GetService(serviceName, serviceId)
 }

@@ -22,12 +22,15 @@ func route(sess *netWorking.Session, pack *netPackages.NetPackage) {
 
 		// 根据协议号断做服务划分
 		// 协议号的划分采用分割协议区间, 用户可以自定义多个区间，用于转发到不同的后端服务
-		if pack.PacketId > 5 {
-			// if err := forward(sess, p[4:]); err != nil {
-			// 	log.Errorf("service id:%v execute failed, error:%v", b, err)
-			// 	sess.Flag |= SESS_KICKED_OUT
-			// 	return nil
-			// }
+		if pack.PacketId == uint8(flats.PacketIdGame) {
+			if sess.GameService != nil {
+				sess.GameService.Forward(pack.Data)
+			} else {
+				sess.Flag |= netWorking.SESS_KICKED_OUT
+				return
+			}
+		} else if pack.PacketId > uint8(flats.PacketIdGame) {
+
 		} else {
 			if h := ReqHandler[pack.HandlerId]; h != nil {
 				log.Logger().Debugf("processing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
