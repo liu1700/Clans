@@ -1,5 +1,12 @@
 package utils
 
+import (
+	"math"
+	"math/big"
+	"math/rand"
+	"time"
+)
+
 /***********************************************************
  *
  * Diffie–Hellman key exchange

@@ -15,7 +15,7 @@
 package cmd
 
 import (
-	"Clans/server/clans"
+	"Clans/server/services/clans"
 	"fmt"
 
 	"github.com/spf13/cobra"
