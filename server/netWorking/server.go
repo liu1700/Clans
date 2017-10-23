@@ -13,16 +13,18 @@ import (
 	kcp "github.com/xtaci/kcp-go"
 )
 
-type ClientHandler func(conn net.Conn, conf *services.Config)
+type ClientHandler func(conn net.Conn, s *Server)
 
 type Server struct {
 	ServiceConnGroups map[string]map[string]net.Conn // 服务类型 -> 服务实例id -> 具体链接
 	Config            *services.Config
-	Clients           map[uint32]*Session
+	ClientsId         uint64
+	Clients           map[uint64]*Session
 }
 
 func (s *Server) InitServer(conf *services.Config) {
 	s.ServiceConnGroups = make(map[string]map[string]net.Conn)
+	s.Clients = make(map[uint64]*Session)
 	s.Config = conf
 }
 
@@ -49,8 +51,9 @@ func (s *Server) TcpServer(handleClient ClientHandler) {
 		conn.SetReadBuffer(config.Sockbuf)
 		// set socket write buffer
 		conn.SetWriteBuffer(config.Sockbuf)
+
 		// start a goroutine for every incoming connection for reading
-		go handleClient(conn, config)
+		go handleClient(conn, s)
 	}
 }
 
@@ -89,7 +92,7 @@ func (s *Server) UdpServer(handleClient ClientHandler) {
 		log.Logger().Debug("accept kcp")
 
 		// start a goroutine for every incoming connection for reading
-		go handleClient(conn, config)
+		go handleClient(conn, s)
 	}
 }
 

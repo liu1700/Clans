@@ -21,7 +21,7 @@ func InitDBTables() {
 
 }
 
-func handleClient(conn net.Conn, config *services.Config) {
+func handleClient(conn net.Conn, s *netWorking.Server) {
 
 }
 

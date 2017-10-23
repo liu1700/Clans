@@ -12,6 +12,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -29,17 +30,18 @@ var (
 // PIPELINE #1: handleClient
 // the goroutine is used for reading incoming PACKETS
 //
-func handleClient(conn net.Conn, config *services.Config) {
+func handleClient(conn net.Conn, s *netWorking.Server) {
 	defer conn.Close()
 	// the input channel for agent()
 	in := make(chan *netPackages.NetPackage)
-	defer func() {
-		close(in) // session will close
-	}()
+
+	config := s.Config
 
 	// create a new session object for the connection
+	sess := new(netWorking.Session)
+
 	// and record it's IP address
-	var sess netWorking.Session
+	// var sess netWorking.Session
 	host, port, err := net.SplitHostPort(conn.RemoteAddr().String())
 	if err != nil {
 		log.Logger().Error("cannot get remote address:", err)
@@ -57,9 +59,17 @@ func handleClient(conn net.Conn, config *services.Config) {
 
 	// start agent for PACKET processing
 	Wg.Add(1)
-	go agent_server.Agent(&sess, shuttingDownChan, &Wg, in, out)
+	go agent_server.Agent(sess, shuttingDownChan, &Wg, in, out)
 
 	sess.OutBuffer = out
+
+	id := atomic.AddUint64(&s.ClientsId, 1)
+	s.Clients[id] = sess
+
+	defer func() {
+		close(in) // session will close
+		delete(s.Clients, id)
+	}()
 
 	// read loop
 	readBytes := make([]byte, netPackages.PACKET_LIMIT)
