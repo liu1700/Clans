@@ -32,3 +32,10 @@ func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage) {
 
 	sess.Write(flats.ReponseIdLogin, pack, builder.FinishedBytes())
 }
+
+func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
+
+	sess.JoinRoom("192.168.1.102", 9080)
+
+	sess.Write(flats.ReponseIdJoinRoom, pack, []byte{})
+}

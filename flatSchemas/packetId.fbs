@@ -4,5 +4,6 @@ enum PacketId:byte {
     None = 0,
     HeartBeat = 1,
     Login = 2,
+    JoinRoom = 3,
     Game = 5
 }

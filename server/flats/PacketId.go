@@ -6,6 +6,7 @@ const (
 	PacketIdNone = 0
 	PacketIdHeartBeat = 1
 	PacketIdLogin = 2
+	PacketIdJoinRoom = 3
 	PacketIdGame = 5
 )
 
@@ -13,6 +14,7 @@ var EnumNamesPacketId = map[int]string{
 	PacketIdNone:"None",
 	PacketIdHeartBeat:"HeartBeat",
 	PacketIdLogin:"Login",
+	PacketIdJoinRoom:"JoinRoom",
 	PacketIdGame:"Game",
 }
 

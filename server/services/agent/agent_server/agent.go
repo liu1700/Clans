@@ -58,7 +58,8 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 			} else {
 				out.RawSend(netPackages.HeartBeatPacket())
 			}
-
+		case frame := <-sess.MQ: // packets from game
+			out.Send(sess, frame)
 		// case frame := <-sess.MQ: // packets from game
 		// 	switch frame.Type {
 		// 	case pb.Game_Message:

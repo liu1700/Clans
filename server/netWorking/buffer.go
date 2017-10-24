@@ -26,6 +26,31 @@ func (buf *Buffer) Start() {
 	}
 }
 
+// packet sending procedure
+func (buf *Buffer) Send(sess *Session, data []byte) {
+	// in case of empty packet
+	if data == nil {
+		return
+	}
+
+	// encryption
+	// (NOT_ENCRYPTED) -> KEYEXCG -> ENCRYPT
+	if sess.Flag&SESS_ENCRYPT != 0 { // encryption is enabled
+		sess.Encoder.XORKeyStream(data, data)
+	} else if sess.Flag&SESS_KEYEXCG != 0 { // key is exchanged, encryption is not yet enabled
+		sess.Flag &^= SESS_KEYEXCG
+		sess.Flag |= SESS_ENCRYPT
+	}
+
+	// queue the data for sending
+	select {
+	case buf.pending <- data:
+	default: // packet will be dropped if txqueuelen exceeds
+		log.Logger().Warn("pending full")
+	}
+	return
+}
+
 // raw packet encapsulation and put it online
 func (buf *Buffer) RawSend(data []byte) bool {
 	// // combine output to reduce syscall.write

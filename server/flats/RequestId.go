@@ -5,10 +5,12 @@ package flats
 const (
 	RequestIdNone = 0
 	RequestIdLogin = 10
+	RequestIdJoinRoom = 11
 )
 
 var EnumNamesRequestId = map[int]string{
 	RequestIdNone:"None",
 	RequestIdLogin:"Login",
+	RequestIdJoinRoom:"JoinRoom",
 }
 

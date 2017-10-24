@@ -98,6 +98,24 @@ func (s *Server) UdpServer(handleClient ClientHandler) {
 	}
 }
 
+func (s *Server) DialRoom(ip string, port int) (net.Conn, error) {
+	retry, retryMax, retryDuration := 0, 5, time.Duration(2)
+
+	log.Logger().Debugf("DialRoom ip:%s, id:%d", ip, port)
+	for retry < retryMax {
+		conn, err := kcp.Dial(fmt.Sprintf("%s:%d", ip, port))
+		if err != nil {
+			log.Logger().Warnf("dial kcp service ip:%s, port:%d, for %d time(s), reason:%s", ip, port, retry, err.Error())
+			retry++
+			time.Sleep(retryDuration)
+		} else {
+			return conn, nil
+		}
+	}
+
+	return nil, errors.New("dial remote server err")
+}
+
 func (s *Server) AddService(ip string, port int, serviceName int, serviceId int) (net.Conn, error) {
 	retry, retryMax, retryDuration := 0, 5, time.Duration(2)
 
