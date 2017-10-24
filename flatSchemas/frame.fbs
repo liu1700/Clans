@@ -1,0 +1,13 @@
+namespace flats;
+
+enum OpType:byte { Move = 1, Shoot = 2 }
+
+table FrameData {
+    frameId:uint;
+    operationList:[Operation];
+}
+
+table Operation {
+    dataType:OpType;
+    data:[ubyte]; // 操作数据, Move: 第一位代表x,y
+}

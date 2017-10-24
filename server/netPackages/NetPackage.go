@@ -4,6 +4,7 @@ import (
 	"Clans/server/flats"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 )
 
 const (
@@ -122,6 +123,7 @@ func BytesToNetPackage(byteSlice []byte) (*NetPackage, error) {
 	// fmt.Println(byteSlice[suffixIndex])
 
 	// 网络均为大端序传输
+	fmt.Println("len ", len(byteSlice), " ds ", dataStart, " dn ", dataEnd)
 	data := byteSlice[dataStart:dataEnd]
 
 	// flatbuffer需要小端序数据

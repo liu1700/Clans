@@ -49,31 +49,39 @@ func (s *Session) JoinRoom(ip string, port int) {
 	}
 
 	s.Stream = stream
-	config := s.ServerInst.Config
-	// read loop
-	readBytes := make([]byte, netPackages.PACKET_LIMIT)
-	for {
-		// solve dead link problem:
-		// physical disconnection without any communcation between client and server
-		// will cause the read to block FOREVER, so a timeout is a rescue.
-		s.Stream.SetReadDeadline(time.Now().Add(config.ReadDeadline))
 
-		// alloc a byte slice of the size defined in the header for reading data
-		n, err := s.Stream.Read(readBytes)
-		if err != nil {
-			log.Logger().Errorf("read readBytes from room failed, ip:%v reason:%v size:%v", ip, err, n)
-			return
-		}
+	go func() {
+		// read loop
+		readBytes := make([]byte, netPackages.PACKET_LIMIT)
+		for {
+			// solve dead link problem:
+			// physical disconnection without any communcation between client and server
+			// will cause the read to block FOREVER, so a timeout is a rescue.
+			s.Stream.SetReadDeadline(time.Now().Add(time.Minute * 5))
 
-		// deliver the data to the input queue of agent()
-		select {
-		case s.MQ <- readBytes: // payload queued
-		case <-s.Die:
-			log.Logger().Warnf("connection closed by logic, flag:%v session ip:%v", s.Flag, s.IP)
-			return
+			// alloc a byte slice of the size defined in the header for reading data
+			n, err := s.Stream.Read(readBytes)
+			if err != nil {
+				log.Logger().Errorf("read readBytes from room failed, ip:%v reason:%v size:%v", ip, err, n)
+				return
+			}
+
+			// deliver the data to the input queue of agent()
+			select {
+			case s.MQ <- readBytes: // payload queued
+			case <-s.Die:
+				log.Logger().Warnf("connection closed by logic, flag:%v session ip:%v", s.Flag, s.IP)
+				s.LeaveRoom()
+				return
+			}
 		}
+	}()
+}
+
+func (s *Session) LeaveRoom() {
+	if err := s.Stream.Close(); err != nil {
+		log.Logger().Error("error when leave room err ", err.Error())
 	}
-
 }
 
 func (s *Session) Push(data []byte) error {
