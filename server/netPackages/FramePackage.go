@@ -21,7 +21,7 @@ type FramePackage struct {
 
 func BytesToFramePackage(byteSlice []byte) (*FramePackage, error) {
 
-	frameIdStart := uint32(0)
+	frameIdStart := uint32(1)
 	frameIdEnd := frameIdStart + 4
 
 	frameId := binary.BigEndian.Uint32(byteSlice[frameIdStart:frameIdEnd])
