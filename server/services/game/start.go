@@ -28,7 +28,7 @@ func InitDBTables() {
 func handleClient(conn net.Conn, s *netWorking.Server) {
 	defer conn.Close()
 	// the input channel for agent()
-	in := make(chan *netPackages.NetPackage)
+	in := make(chan *netPackages.FramePackage)
 
 	config := s.Config
 
@@ -70,7 +70,7 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 	}()
 
 	// read loop
-	readBytes := make([]byte, netPackages.PACKET_LIMIT)
+	readBytes := make([]byte, 32)
 	for {
 		// solve dead link problem:
 		// physical disconnection without any communcation between client and server
@@ -85,13 +85,11 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 		}
 
 		// 转化为package
-		payload, err := netPackages.BytesToNetPackage(readBytes)
+		payload, err := netPackages.BytesToFramePackage(readBytes)
 		if err != nil {
 			log.Logger().Errorf("read payload faild, err :%v", err.Error())
 			return
 		}
-
-		log.Logger().Debugf("%+v \n", *payload)
 
 		// deliver the data to the input queue of agent()
 		select {
@@ -119,6 +117,8 @@ func Start(config *services.Config) {
 
 	// listeners
 	go server.UdpServer(handleClient)
+
+	game_server.InitDispatcher(server)
 
 	Wg.Wait()
 

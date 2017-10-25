@@ -5,6 +5,7 @@ import (
 	"Clans/server/log"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -59,7 +60,8 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 				out.RawSend(netPackages.HeartBeatPacket())
 			}
 		case frame := <-sess.MQ: // packets from game
-			out.Send(sess, frame)
+			out.RawSend(frame)
+			fmt.Println("asdasdasdas")
 		// case frame := <-sess.MQ: // packets from game
 		// 	switch frame.Type {
 		// 	case pb.Game_Message:

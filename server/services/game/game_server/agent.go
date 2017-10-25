@@ -1,7 +1,6 @@
 package game_server
 
 import (
-	"Clans/server/flats"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
 	"sync"
@@ -14,7 +13,7 @@ var (
 
 // PIPELINE #2: agent
 // all the packets from handleClient() will be handled
-func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.NetPackage, out *netWorking.Buffer) {
+func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.WaitGroup, in chan *netPackages.FramePackage, out *netWorking.Buffer) {
 	defer wg.Done() // will decrease waitgroup by one, useful for manual server shutdown
 
 	// init session
@@ -44,12 +43,13 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 			sess.PacketTime = time.Now()
 			sess.LastPacketTime = sess.PacketTime
 
-			// 如果是心跳包则不处理,直接写回
-			if msg.PacketId != flats.PacketIdHeartBeat {
-				route(sess, msg)
-			} else {
-				out.RawSend(netPackages.HeartBeatPacket())
-			}
+			gatherFrameChan <- msg
+			// // 如果是心跳包则不处理,直接写回
+			// if msg.PacketId != flats.PacketIdHeartBeat {
+			// 	route(sess, msg)
+			// } else {
+			// 	out.RawSend(netPackages.HeartBeatPacket())
+			// }
 		// case <-min_timer: // minutes timer
 		// 	timerWork(sess)
 		// 	min_timer = time.After(time.Minute)

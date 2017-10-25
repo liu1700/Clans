@@ -52,7 +52,7 @@ func (s *Session) JoinRoom(ip string, port int) {
 
 	go func() {
 		// read loop
-		readBytes := make([]byte, netPackages.PACKET_LIMIT)
+		readBytes := make([]byte, 32)
 		for {
 			// solve dead link problem:
 			// physical disconnection without any communcation between client and server
