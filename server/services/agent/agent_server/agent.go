@@ -61,7 +61,7 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 			}
 		case frame := <-sess.MQ: // packets from game
 			out.RawSend(frame)
-			fmt.Println("asdasdasdas")
+			fmt.Println("write frame ", frame)
 		// case frame := <-sess.MQ: // packets from game
 		// 	switch frame.Type {
 		// 	case pb.Game_Message:

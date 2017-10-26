@@ -1,7 +1,6 @@
 package netPackages
 
 import (
-	"encoding/binary"
 	"fmt"
 )
 
@@ -19,16 +18,18 @@ type FramePackage struct {
 	SrcDatas []byte // [optype1, d11, d12, splitflag, optype2, d21]
 }
 
+// 上报的数据帧不包含帧id，逻辑帧id需要服务器控制
 func BytesToFramePackage(byteSlice []byte) (*FramePackage, error) {
 
-	frameIdStart := uint32(1)
-	frameIdEnd := frameIdStart + 4
+	// frameIdStart := uint32(1)
+	// frameIdEnd := frameIdStart + 4
 
-	frameId := binary.BigEndian.Uint32(byteSlice[frameIdStart:frameIdEnd])
+	// frameId := binary.BigEndian.Uint32(byteSlice[frameIdStart:frameIdEnd])
 
-	fmt.Printf("frame ID %d \n", frameId)
+	// fmt.Printf("frame ID %d \n", frameId)
 
-	pidIndex := frameIdEnd
+	// pidIndex := frameIdEnd
+	pidIndex := uint32(0)
 
 	pid := uint8(byteSlice[pidIndex])
 	fmt.Printf("Pid %d \n", pid)
@@ -37,7 +38,6 @@ func BytesToFramePackage(byteSlice []byte) (*FramePackage, error) {
 	cloneData := make([]byte, len(byteSlice))
 	copy(cloneData, byteSlice)
 	pack := &FramePackage{
-		FrameId:  frameId,
 		PlayerId: pid,
 		SrcDatas: cloneData,
 	}

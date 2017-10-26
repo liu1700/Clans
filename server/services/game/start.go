@@ -70,7 +70,7 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 	}()
 
 	// read loop
-	readBytes := make([]byte, 32)
+	readBytes := make([]byte, netPackages.UPLOAD_FRAME_PACKET_LIMIT)
 	for {
 		// solve dead link problem:
 		// physical disconnection without any communcation between client and server

@@ -1,6 +1,7 @@
 package netWorking
 
 import (
+	"Clans/server/flats"
 	"Clans/server/log"
 	"net"
 )
@@ -65,6 +66,20 @@ func (buf *Buffer) RawSend(data []byte) bool {
 		return false
 	}
 
+	return true
+}
+
+func (buf *Buffer) SendFrame(data []byte) bool {
+	// 写入packetid 供前端解析
+	d := make([]byte, len(data)+1)
+	d[0] = byte(flats.PacketIdGame)
+	copy(d[1:], data)
+
+	n, err := buf.conn.Write(d)
+	if err != nil {
+		log.Logger().Warnf("Error send frame, bytes: %v reason: %v", n, err)
+		return false
+	}
 	return true
 }
 

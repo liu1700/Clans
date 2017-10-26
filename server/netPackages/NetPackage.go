@@ -8,7 +8,9 @@ import (
 )
 
 const (
-	PACKET_LIMIT = 1024
+	PACKET_LIMIT                = 1024
+	DISPATCH_FRAME_PACKET_LIMIT = 256
+	UPLOAD_FRAME_PACKET_LIMIT   = 32
 )
 
 type NetPackage struct {

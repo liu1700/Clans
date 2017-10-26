@@ -1,9 +1,13 @@
 package game_server
 
 import (
+	"Clans/server/flats"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
+	"fmt"
 	"time"
+
+	"github.com/google/flatbuffers/go"
 )
 
 var (
@@ -13,11 +17,15 @@ var (
 	dispatchTicker  *time.Ticker // 帧数据分发计时器
 	dispatchDur     = time.Duration(time.Millisecond * 50)
 	dispatchChan    chan []byte
+
+	LogicFrameId uint32 // 逻辑帧id
+
+	builder *flatbuffers.Builder
 )
 
 type Frame struct {
 	Id              uint32
-	PlayerOprations map[byte][]byte // playerId in room -> operationlist 客户端根据playerId来进行操作数据的分发
+	PlayerOprations map[uint8][]byte // playerId in room -> operationlist 客户端根据playerId来进行操作数据的分发
 }
 
 func init() {
@@ -26,11 +34,14 @@ func init() {
 	dispatchChan = make(chan []byte, 1024)
 	dispatchTicker = time.NewTicker(dispatchDur)
 
+	builder = flatbuffers.NewBuilder(0)
+
 	go func() {
 		for _ = range dispatchTicker.C {
 			gatherFrameChan <- nil
 			// 插入nil作为分隔标志位
 			pushDataToClient()
+			LogicFrameId++
 		}
 	}()
 }
@@ -48,7 +59,8 @@ func InitDispatcher(server *netWorking.Server) {
 					if sess == nil {
 						continue
 					}
-					sess.OutBuffer.RawSend(data)
+					fmt.Println("Dispatch ", data)
+					sess.OutBuffer.SendFrame(data)
 				}
 			}
 		}
@@ -56,26 +68,68 @@ func InitDispatcher(server *netWorking.Server) {
 }
 
 func pushDataToClient() {
+
 	for f := range gatherFrameChan {
 		if f == nil {
+			frameData := AllFrameList[LogicFrameId]
+			if frameData == nil {
+				return
+			}
+
+			var operationsOffset flatbuffers.UOffsetT
+			// flats.LogicFrameStartOperationsVector(builder, len(frameData.PlayerOprations))
+			operationOffsetList := make([]flatbuffers.UOffsetT, len(frameData.PlayerOprations))
+			i := 0
+			for pid, _ := range frameData.PlayerOprations {
+				opts := frameData.PlayerOprations[pid]
+				datas := builder.CreateByteVector(opts)
+
+				flats.OperationStart(builder)
+				flats.OperationAddPid(builder, byte(pid))
+				flats.OperationAddData(builder, datas)
+
+				rpData := flats.OperationEnd(builder)
+				operationOffsetList[i] = rpData
+				i++
+				// operationOffsetList = append(operationOffsetList, rpData)
+				// builder.PrependUOffsetT(rpData)
+			}
+
+			flats.LogicFrameStartOperationsVector(builder, len(frameData.PlayerOprations))
+			for i := 0; i < len(operationOffsetList); i++ {
+				builder.PrependUOffsetT(operationOffsetList[i])
+			}
+			operationsOffset = builder.EndVector(len(frameData.PlayerOprations))
+
+			flats.LogicFrameStart(builder)
+			flats.LogicFrameAddFrameId(builder, LogicFrameId)
+			flats.LogicFrameAddOperations(builder, operationsOffset)
+
+			builder.Finish(flats.LogicFrameEnd(builder))
+
+			// 分发此帧操作
+			dispatchChan <- builder.FinishedBytes()
+
+			builder.Reset()
 			return
 		}
 
-		frame := AllFrameList[f.FrameId]
+		// 保存帧数据到全局帧数据列表
+		frame := AllFrameList[LogicFrameId]
 		if frame == nil {
 			frame = new(Frame)
-			frame.Id = f.FrameId
-			AllFrameList[f.FrameId] = frame
+			frame.Id = LogicFrameId
+			AllFrameList[LogicFrameId] = frame
 		}
 
 		operations := frame.PlayerOprations
 		if operations == nil {
-			operations = make(map[byte][]byte)
+			operations = make(map[uint8][]byte)
 		}
 
 		operations[f.PlayerId] = append(operations[f.PlayerId], f.SrcDatas...)
 		frame.PlayerOprations = operations
 
-		dispatchChan <- f.SrcDatas
+		// dispatchChan <- f.SrcDatas
 	}
 }

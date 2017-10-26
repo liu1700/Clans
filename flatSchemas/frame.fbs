@@ -1,0 +1,11 @@
+namespace flats;
+
+table Operation {
+    pid:ubyte;
+    data:[byte];
+}
+
+table LogicFrame {
+    frameId:uint;
+    operations:[Operation];
+}
