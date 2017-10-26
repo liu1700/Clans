@@ -6,13 +6,13 @@ const (
 	RequestIdNone = 0
 	RequestIdLogin = 10
 	RequestIdJoinRoom = 11
-	RequestIdMySpawnData = 12
+	RequestIdLeaveRoom = 12
 )
 
 var EnumNamesRequestId = map[int]string{
 	RequestIdNone:"None",
 	RequestIdLogin:"Login",
 	RequestIdJoinRoom:"JoinRoom",
-	RequestIdMySpawnData:"MySpawnData",
+	RequestIdLeaveRoom:"LeaveRoom",
 }
 

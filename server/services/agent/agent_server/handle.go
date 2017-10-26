@@ -11,6 +11,13 @@ import (
 
 var pid int
 
+var playerList map[uint32]bool
+var roomReady bool
+
+func init() {
+	playerList = make(map[uint32]bool)
+}
+
 func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	rq := flats.GetRootAsRqLogin(pack.Data, 0)
 
@@ -23,6 +30,7 @@ func RqUserLogin(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	}
 
 	sess.UserId = u.ID
+	sess.ServerInst.UserClients[sess.UserId] = sess
 
 	builder := flatbuffers.NewBuilder(0)
 	rpName := builder.CreateByteString(rq.Name())
@@ -39,21 +47,41 @@ func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
 
 	sess.JoinRoom("192.168.1.102", 9080)
 
-	sess.Write(flats.ResponseIdJoinRoom, pack, []byte{})
-}
+	playerList[sess.UserId] = true
 
-func RqFetchPlayerSpawnData(sess *netWorking.Session, pack *netPackages.NetPackage) {
-	pid++
 	builder := flatbuffers.NewBuilder(0)
 
-	flats.RpPlayerSpawnStart(builder)
-	flats.RpPlayerSpawnAddPid(builder, byte(pid))
-	flats.RpPlayerSpawnAddHealth(builder, byte(100))
-	flats.RpPlayerSpawnAddShield(builder, byte(100))
-	flats.RpPlayerSpawnAddSpawnAtX(builder, int16(31))
-	flats.RpPlayerSpawnAddSpawnAtY(builder, int16(28))
-	rp := flats.RpPlayerSpawnEnd(builder)
+	flats.RpMatchMakingStart(builder)
+	flats.RpMatchMakingAddUserId(builder, sess.UserId)
+	flats.RpMatchMakingAddIsJoin(builder, int8(1))
+	rp := flats.RpMatchMakingEnd(builder)
 	builder.Finish(rp)
 
-	sess.Write(flats.ResponseIdMySpawnData, pack, builder.FinishedBytes())
+	sess.Write(flats.ResponseIdMatchMaking, pack, builder.FinishedBytes())
+
+	// 人满，开打
+	if len(playerList) == 2 {
+		roomReady = true
+		for uId, _ := range playerList {
+			if s := sess.ServerInst.UserClients[uId]; s != nil {
+				// 不应该复用pack
+				s.Write(flats.ResponseIdJoinRoom, pack, []byte{})
+
+				// 本局pid
+				pid++
+				builder := flatbuffers.NewBuilder(0)
+
+				flats.RpPlayerSpawnStart(builder)
+				flats.RpPlayerSpawnAddPid(builder, byte(pid))
+				flats.RpPlayerSpawnAddHealth(builder, byte(100))
+				flats.RpPlayerSpawnAddShield(builder, byte(100))
+				flats.RpPlayerSpawnAddSpawnAtX(builder, int16(40))
+				flats.RpPlayerSpawnAddSpawnAtY(builder, int16(28))
+				rp := flats.RpPlayerSpawnEnd(builder)
+				builder.Finish(rp)
+
+				sess.Write(flats.ResponseIdMySpawnData, pack, builder.FinishedBytes())
+			}
+		}
+	}
 }

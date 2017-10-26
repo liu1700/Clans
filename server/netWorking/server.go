@@ -19,14 +19,17 @@ type ClientHandler func(conn net.Conn, s *Server)
 type Server struct {
 	ServiceConnGroups map[int]map[int]*Service // 服务类型 -> 服务实例id -> 实例
 	Config            *services.Config
-	ClientsId         uint64
+	ClientsId         uint64 // 自增id，非userid
 	Clients           map[uint64]*Session
+
+	UserClients map[uint32]*Session // 玩家id对应的session
 	// ClientsMap        map[int]map[int]map[uint64]bool // 服务类型 -> 服务实例id -> clientId -> 是否存在
 }
 
 func (s *Server) InitServer(conf *services.Config) {
 	s.ServiceConnGroups = make(map[int]map[int]*Service)
 	s.Clients = make(map[uint64]*Session)
+	s.UserClients = make(map[uint32]*Session)
 	s.Config = conf
 }
 

@@ -8,6 +8,11 @@ table RpPlayerSpawn {
     shield:ubyte; // 初始护甲值
 }
 
+table RpMatchMaking {
+    userId:uint;
+    isJoin:byte; // 1: 加入, 0: 离开
+}
+
 table RpPlayerSceneData {
     // 场景数据
 }

@@ -4,12 +4,13 @@ enum RequestId:byte {
     None = 0,
     Login = 10,
     JoinRoom = 11,
-    MySpawnData = 12,
+    LeaveRoom = 12,
 }
 
 enum ResponseId:byte {
     None = 0,
     Login = 10,
     JoinRoom = 11,
-    MySpawnData = 12,     
+    MatchMaking = 12,
+    MySpawnData = 13,     
 }
