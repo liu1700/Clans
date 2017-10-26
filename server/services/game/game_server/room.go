@@ -4,7 +4,6 @@ import (
 	"Clans/server/flats"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
-	"fmt"
 	"time"
 
 	"github.com/google/flatbuffers/go"
@@ -15,7 +14,7 @@ var (
 
 	gatherFrameChan chan *netPackages.FramePackage
 	dispatchTicker  *time.Ticker // 帧数据分发计时器
-	dispatchDur     = time.Duration(time.Millisecond * 50)
+	dispatchDur     = time.Duration(time.Millisecond * 100)
 	dispatchChan    chan []byte
 
 	LogicFrameId uint32 // 逻辑帧id
@@ -59,7 +58,6 @@ func InitDispatcher(server *netWorking.Server) {
 					if sess == nil {
 						continue
 					}
-					fmt.Println("Dispatch ", data)
 					sess.OutBuffer.SendFrame(data)
 				}
 			}
@@ -107,7 +105,7 @@ func pushDataToClient() {
 
 			builder.Finish(flats.LogicFrameEnd(builder))
 
-			// 分发此帧操作
+			// 分发此帧操作给所有客户端
 			dispatchChan <- builder.FinishedBytes()
 
 			builder.Reset()

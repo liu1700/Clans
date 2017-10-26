@@ -68,7 +68,7 @@ func (s *Session) JoinRoom(ip string, port int) {
 
 			// deliver the data to the input queue of agent()
 			select {
-			case s.MQ <- readBytes: // payload queued
+			case s.MQ <- netPackages.GetFramePackageData(readBytes): // payload queued
 			case <-s.Die:
 				log.Logger().Warnf("connection closed by logic, flag:%v session ip:%v", s.Flag, s.IP)
 				s.LeaveRoom()
