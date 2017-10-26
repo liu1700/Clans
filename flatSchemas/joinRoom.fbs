@@ -1,0 +1,13 @@
+namespace flats;
+
+table RpPlayerSpawn {
+    pid:ubyte; // 分配给玩家的id
+    spawnAtX:short; // 出生点
+    spawnAtY:short;
+    health:ubyte; // 初始血量
+    shield:ubyte; // 初始护甲值
+}
+
+table RpPlayerSceneData {
+    // 场景数据
+}
