@@ -57,13 +57,11 @@ func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	rp := flats.RpMatchMakingEnd(builder)
 	builder.Finish(rp)
 
-	sess.Write(flats.ResponseIdMatchMaking, pack, builder.FinishedBytes())
-
-	// 人满，开打
-	if len(playerList) == 2 {
-		roomReady = true
-		for uId, _ := range playerList {
-			if s := sess.ServerInst.UserClients[uId]; s != nil {
+	for uId, _ := range playerList {
+		if s := sess.ServerInst.UserClients[uId]; s != nil {
+			// 人满，开打
+			if len(playerList) == 2 {
+				roomReady = true
 				// 不应该复用pack
 				s.Write(flats.ResponseIdJoinRoom, pack, []byte{})
 
@@ -82,6 +80,8 @@ func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
 
 				sess.Write(flats.ResponseIdMySpawnData, pack, builder.FinishedBytes())
 			}
+
+			sess.Write(flats.ResponseIdMatchMaking, pack, builder.FinishedBytes())
 		}
 	}
 }
