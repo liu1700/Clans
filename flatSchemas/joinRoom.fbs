@@ -1,11 +1,16 @@
 namespace flats;
 
 table RpPlayerSpawn {
-    pid:ubyte; // 分配给玩家的id
+    pid:ubyte; // 当局分配给玩家的id
     spawnAtX:short; // 出生点
     spawnAtY:short;
     health:ubyte; // 初始血量
     shield:ubyte; // 初始护甲值
+}
+
+table RpAllPlayerSpawns {
+    pid:ubyte;
+    others:[RpPlayerSpawn];
 }
 
 table RpMatchMaking {

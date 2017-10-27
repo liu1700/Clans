@@ -102,7 +102,7 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 			return
 		}
 
-		log.Logger().Debugf("frame payload %+v \n", *payload)
+		// log.Logger().Debugf("frame payload %+v \n", *payload)
 
 		// deliver the data to the input queue of agent()
 		select {
