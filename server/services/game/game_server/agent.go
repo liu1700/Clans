@@ -1,6 +1,7 @@
 package game_server
 
 import (
+	"Clans/server/log"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
 	"sync"
@@ -20,6 +21,9 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 	sess.ConnectTime = time.Now()
 	sess.LastPacketTime = time.Now()
 
+	// minute timer
+	min_timer := time.After(time.Minute)
+
 	// cleanup work
 	defer func() {
 		close(sess.Die)
@@ -29,8 +33,10 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 	}()
 
 	// >> the main message loop <<
+	// handles 4 types of message:
 	//  1. from client
-	//  2. server shutdown signal
+	//  2. timer
+	//  3. server shutdown signal
 	for {
 		select {
 		case msg, ok := <-in: // packet from network
@@ -44,17 +50,11 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 			sess.LastPacketTime = sess.PacketTime
 
 			gatherFrameChan <- msg
-			// // 如果是心跳包则不处理,直接写回
-			// if msg.PacketId != flats.PacketIdHeartBeat {
-			// 	route(sess, msg)
-			// } else {
-			// 	out.RawSend(netPackages.HeartBeatPacket())
-			// }
-		// case <-min_timer: // minutes timer
-		// 	timerWork(sess)
-		// 	min_timer = time.After(time.Minute)
+		case <-min_timer: // minutes timer
+			timerWork(sess)
+			min_timer = time.After(time.Minute)
 		case <-shuttingDownChan: // server is shuting down...
-			// broad cast shutting down
+			sess.Flag |= netWorking.SESS_KICKED_OUT
 		}
 
 		// see if the player should be kicked out.
@@ -66,4 +66,18 @@ func Agent(sess *netWorking.Session, shuttingDownChan chan struct{}, wg *sync.Wa
 
 func SetRpmLimit(limit int) {
 	rpmLimit = limit
+}
+
+// 玩家1分钟定时器
+func timerWork(sess *netWorking.Session) {
+	defer func() {
+		sess.PacketCount1Min = 0
+	}()
+
+	// 发包频率控制，太高的RPS直接踢掉
+	if sess.PacketCount1Min > rpmLimit {
+		sess.Flag |= netWorking.SESS_KICKED_OUT
+		log.Logger().Errorf("userid %d, packet in 1m %d, total %d", sess.UserId, sess.PacketCount1Min, sess.PacketCount)
+		return
+	}
 }

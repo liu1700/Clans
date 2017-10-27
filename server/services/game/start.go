@@ -35,6 +35,8 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 	// create a new session object for the connection
 	sess := new(netWorking.Session)
 
+	sess.MQ = make(chan []byte, 512)
+
 	// and record it's IP address
 	// var sess netWorking.Session
 	host, port, err := net.SplitHostPort(conn.RemoteAddr().String())
@@ -64,6 +66,10 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 
 	sess.ServerInst = s
 
+	// // 获取游戏逻辑服务
+	// service := s.GetService(flats.PacketIdGame, 1)
+	// sess.GameService = service
+
 	defer func() {
 		close(in) // session will close
 		delete(s.Clients, id)
@@ -84,12 +90,19 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 			return
 		}
 
+		// 解密
+		if sess.Flag&netWorking.SESS_ENCRYPT != 0 {
+			sess.Decoder.XORKeyStream(readBytes, readBytes)
+		}
+
 		// 转化为package
 		payload, err := netPackages.BytesToFramePackage(readBytes)
 		if err != nil {
 			log.Logger().Errorf("read payload faild, err :%v", err.Error())
 			return
 		}
+
+		log.Logger().Debugf("frame payload %+v \n", *payload)
 
 		// deliver the data to the input queue of agent()
 		select {

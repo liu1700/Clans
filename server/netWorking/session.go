@@ -4,7 +4,6 @@ import (
 	"Clans/server/log"
 	"Clans/server/netPackages"
 	"crypto/rc4"
-	"errors"
 	"net"
 	"time"
 )
@@ -42,59 +41,60 @@ type Session struct {
 }
 
 func (s *Session) JoinRoom(ip string, port int) {
-	stream, err := s.ServerInst.DialRoom(ip, port)
-	if err != nil {
-		log.Logger().Error("error when dial room stream err:", err.Error())
-		return
-	}
+	// stream, err := s.ServerInst.DialRoom(ip, port)
+	// if err != nil {
+	// 	log.Logger().Error("error when dial room stream err:", err.Error())
+	// 	return
+	// }
 
-	s.Stream = stream
+	// s.Stream = stream
 
-	go func() {
-		// read loop
-		readBytes := make([]byte, netPackages.DISPATCH_FRAME_PACKET_LIMIT)
-		for {
-			// solve dead link problem:
-			// physical disconnection without any communcation between client and server
-			// will cause the read to block FOREVER, so a timeout is a rescue.
-			s.Stream.SetReadDeadline(time.Now().Add(time.Minute * 5))
+	// go func() {
+	// 	// read loop
+	// 	readBytes := make([]byte, netPackages.DISPATCH_FRAME_PACKET_LIMIT)
+	// 	for {
+	// 		// solve dead link problem:
+	// 		// physical disconnection without any communcation between client and server
+	// 		// will cause the read to block FOREVER, so a timeout is a rescue.
+	// 		s.Stream.SetReadDeadline(time.Now().Add(time.Minute * 5))
 
-			// alloc a byte slice of the size defined in the header for reading data
-			n, err := s.Stream.Read(readBytes)
-			if err != nil {
-				log.Logger().Errorf("read readBytes from room failed, ip:%v reason:%v size:%v", ip, err, n)
-				return
-			}
+	// 		// alloc a byte slice of the size defined in the header for reading data
+	// 		n, err := s.Stream.Read(readBytes)
+	// 		if err != nil {
+	// 			log.Logger().Errorf("read readBytes from room failed, ip:%v reason:%v size:%v", ip, err, n)
+	// 			return
+	// 		}
 
-			// deliver the data to the input queue of agent()
-			select {
-			case s.MQ <- netPackages.GetFramePackageData(readBytes): // payload queued
-			case <-s.Die:
-				log.Logger().Warnf("connection closed by logic, flag:%v session ip:%v", s.Flag, s.IP)
-				s.LeaveRoom()
-				return
-			}
-		}
-	}()
+	// 		// deliver the data to the input queue of agent()
+	// 		select {
+	// 		case s.MQ <- netPackages.GetFramePackageData(readBytes): // payload queued
+	// 		case <-s.Die:
+	// 			log.Logger().Warnf("connection closed by logic, flag:%v session ip:%v", s.Flag, s.IP)
+	// 			s.LeaveRoom()
+	// 			return
+	// 		}
+	// 	}
+	// }()
 }
 
 func (s *Session) LeaveRoom() {
-	if err := s.Stream.Close(); err != nil {
-		log.Logger().Error("error when leave room err ", err.Error())
-	}
+	// if err := s.Stream.Close(); err != nil {
+	// 	log.Logger().Error("error when leave room err ", err.Error())
+	// }
 }
 
 func (s *Session) Push(data []byte) error {
-	if s.Stream != nil {
-		if _, err := s.Stream.Write(data); err != nil {
-			log.Logger().Error("error when push data to game room err: ", err.Error())
-			return err
-		}
-		return nil
-	} else {
-		log.Logger().Error("nil stream")
-		return errors.New("nil stream")
-	}
+	// if s.Stream != nil {
+	// 	if _, err := s.Stream.Write(data); err != nil {
+	// 		log.Logger().Error("error when push data to game room err: ", err.Error())
+	// 		return err
+	// 	}
+	// 	return nil
+	// } else {
+	// 	log.Logger().Error("nil stream")
+	// 	return errors.New("nil stream")
+	// }
+	return nil
 }
 
 // packet sending procedure

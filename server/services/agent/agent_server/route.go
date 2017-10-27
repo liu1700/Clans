@@ -29,17 +29,17 @@ func route(sess *netWorking.Session, pack *netPackages.NetPackage) {
 			// 	sess.Flag |= netWorking.SESS_KICKED_OUT
 			// 	return
 			// }
-			if err := sess.Push(pack.Data); err != nil {
-				sess.Flag |= netWorking.SESS_KICKED_OUT
-				return
-			}
+			// if err := sess.Push(pack.Data); err != nil {
+			// 	sess.Flag |= netWorking.SESS_KICKED_OUT
+			// 	return
+			// }
 		} else if pack.PacketId > uint8(flats.PacketIdGame) {
 
 		} else {
 			if h := ReqHandler[pack.HandlerId]; h != nil {
 				log.Logger().Debugf("processing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
 				h(sess, pack)
-				log.Logger().Debugf("finishing request id %d ,name %s", pack.HandlerId, flats.EnumNamesRequestId[int(pack.HandlerId)])
+				log.Logger().Debugf("finishing last request id %d ,name %s", pack.HandlerId, flats.EnumNamesResponseId[int(pack.HandlerId)])
 			}
 			// if h := client_handler.Handlers[b]; h != nil {
 			// 	ret = h(sess, reader)

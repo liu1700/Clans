@@ -7,6 +7,7 @@ const (
 	RequestIdLogin = 10
 	RequestIdJoinRoom = 11
 	RequestIdLeaveRoom = 12
+	RequestIdFetchSpawnData = 13
 )
 
 var EnumNamesRequestId = map[int]string{
@@ -14,5 +15,6 @@ var EnumNamesRequestId = map[int]string{
 	RequestIdLogin:"Login",
 	RequestIdJoinRoom:"JoinRoom",
 	RequestIdLeaveRoom:"LeaveRoom",
+	RequestIdFetchSpawnData:"FetchSpawnData",
 }
 

@@ -13,6 +13,11 @@ table RpMatchMaking {
     isJoin:byte; // 1: 加入, 0: 离开
 }
 
+table RpStartMatchMaking {
+    battleServerIp:string;
+    serverPort:ushort;
+}
+
 table RpPlayerSceneData {
     // 场景数据
 }

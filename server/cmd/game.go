@@ -33,7 +33,7 @@ var gameCmd = &cobra.Command{
 
 		config := &services.Config{
 			Listen:       "192.168.1.102:9080",
-			ReadDeadline: 15 * time.Second,
+			ReadDeadline: 1 * time.Minute,
 			Sockbuf:      32767,
 			Udp_sockbuf:  4194304,
 			Txqueuelen:   128,
