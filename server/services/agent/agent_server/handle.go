@@ -112,7 +112,7 @@ func RqFetchSpawnData(sess *netWorking.Session, pack *netPackages.NetPackage) {
 		flats.RpPlayerSpawnStart(builder)
 		flats.RpPlayerSpawnAddPid(builder, byte(l.PlayerIdInRound))
 		flats.RpPlayerSpawnAddHealth(builder, byte(100))
-		flats.RpPlayerSpawnAddShield(builder, byte(100))
+		flats.RpPlayerSpawnAddShield(builder, byte(0))
 		flats.RpPlayerSpawnAddSpawnAtX(builder, int16(l.X))
 		flats.RpPlayerSpawnAddSpawnAtY(builder, int16(l.Y))
 
