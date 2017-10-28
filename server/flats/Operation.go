@@ -38,17 +38,29 @@ func (rcv *Operation) MutatePid(n byte) bool {
 	return rcv._tab.MutateByteSlot(4, n)
 }
 
-func (rcv *Operation) Data(j int) int8 {
+func (rcv *Operation) Typ() byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Operation) MutateTyp(n byte) bool {
+	return rcv._tab.MutateByteSlot(6, n)
+}
+
+func (rcv *Operation) Data(j int) int16 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
 		a := rcv._tab.Vector(o)
-		return rcv._tab.GetInt8(a + flatbuffers.UOffsetT(j*1))
+		return rcv._tab.GetInt16(a + flatbuffers.UOffsetT(j*2))
 	}
 	return 0
 }
 
 func (rcv *Operation) DataLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
@@ -56,16 +68,19 @@ func (rcv *Operation) DataLength() int {
 }
 
 func OperationStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
 }
 func OperationAddPid(builder *flatbuffers.Builder, pid byte) {
 	builder.PrependByteSlot(0, pid, 0)
 }
+func OperationAddTyp(builder *flatbuffers.Builder, typ byte) {
+	builder.PrependByteSlot(1, typ, 0)
+}
 func OperationAddData(builder *flatbuffers.Builder, data flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(data), 0)
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(data), 0)
 }
 func OperationStartDataVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(1, numElems, 1)
+	return builder.StartVector(2, numElems, 2)
 }
 func OperationEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

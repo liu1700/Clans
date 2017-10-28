@@ -38,16 +38,13 @@ func (rcv *LogicFrame) MutateFrameId(n uint32) bool {
 	return rcv._tab.MutateUint32Slot(4, n)
 }
 
-func (rcv *LogicFrame) Operations(obj *Operation, j int) bool {
+func (rcv *LogicFrame) Operations(j int) byte {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		x := rcv._tab.Vector(o)
-		x += flatbuffers.UOffsetT(j) * 4
-		x = rcv._tab.Indirect(x)
-		obj.Init(rcv._tab.Bytes, x)
-		return true
+		a := rcv._tab.Vector(o)
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
-	return false
+	return 0
 }
 
 func (rcv *LogicFrame) OperationsLength() int {
@@ -56,6 +53,14 @@ func (rcv *LogicFrame) OperationsLength() int {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
+}
+
+func (rcv *LogicFrame) OperationsBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
 }
 
 func LogicFrameStart(builder *flatbuffers.Builder) {
@@ -68,7 +73,7 @@ func LogicFrameAddOperations(builder *flatbuffers.Builder, operations flatbuffer
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(operations), 0)
 }
 func LogicFrameStartOperationsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(4, numElems, 4)
+	return builder.StartVector(1, numElems, 1)
 }
 func LogicFrameEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

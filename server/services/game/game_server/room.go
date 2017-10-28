@@ -4,6 +4,8 @@ import (
 	"Clans/server/flats"
 	"Clans/server/netPackages"
 	"Clans/server/netWorking"
+	"bytes"
+	"encoding/binary"
 	"time"
 
 	"github.com/google/flatbuffers/go"
@@ -23,8 +25,9 @@ var (
 )
 
 type Frame struct {
-	Id              uint32
-	PlayerOprations map[uint8][]byte // playerId in room -> operationlist 客户端根据playerId来进行操作数据的分发
+	Id uint32
+	// PlayerOprations map[uint8][]byte // playerId in room -> operationlist 客户端根据playerId来进行操作数据的分发
+	PlayerOprations [][]byte // 每帧按顺序存入的帧数据
 }
 
 func init() {
@@ -74,30 +77,22 @@ func pushDataToClient() {
 				return
 			}
 
-			var operationsOffset flatbuffers.UOffsetT
-			// flats.LogicFrameStartOperationsVector(builder, len(frameData.PlayerOprations))
-			operationOffsetList := make([]flatbuffers.UOffsetT, len(frameData.PlayerOprations))
-			i := 0
-			for pid, _ := range frameData.PlayerOprations {
-				opts := frameData.PlayerOprations[pid]
-				datas := builder.CreateByteVector(opts)
-
-				flats.OperationStart(builder)
-				flats.OperationAddPid(builder, byte(pid))
-				flats.OperationAddData(builder, datas)
-
-				rpData := flats.OperationEnd(builder)
-				operationOffsetList[i] = rpData
-				i++
-				// operationOffsetList = append(operationOffsetList, rpData)
-				// builder.PrependUOffsetT(rpData)
+			// flatbuffers.LogicFrameStartOperationsVector(builder, (len(frameData.PlayerOprations)+2)*)
+			returnBytes := new(bytes.Buffer)
+			size := uint16(0)
+			for i := 0; i < len(frameData.PlayerOprations); i++ {
+				size = uint16(len(frameData.PlayerOprations[i]))
+				binary.Write(returnBytes, binary.BigEndian, size)
+				binary.Write(returnBytes, binary.BigEndian, frameData.PlayerOprations[i])
 			}
 
-			flats.LogicFrameStartOperationsVector(builder, len(frameData.PlayerOprations))
-			for i := 0; i < len(operationOffsetList); i++ {
-				builder.PrependUOffsetT(operationOffsetList[i])
+			l := returnBytes.Len()
+			flats.LogicFrameStartOperationsVector(builder, l)
+			bs := returnBytes.Bytes()
+			for i := l - 1; i >= 0; i-- {
+				builder.PrependByte(bs[i])
 			}
-			operationsOffset = builder.EndVector(len(frameData.PlayerOprations))
+			operationsOffset := builder.EndVector(l)
 
 			flats.LogicFrameStart(builder)
 			flats.LogicFrameAddFrameId(builder, LogicFrameId)
@@ -109,6 +104,41 @@ func pushDataToClient() {
 			dispatchChan <- builder.FinishedBytes()
 
 			builder.Reset()
+			// var operationsOffset flatbuffers.UOffsetT
+			// // flats.LogicFrameStartOperationsVector(builder, len(frameData.PlayerOprations))
+			// operationOffsetList := make([]flatbuffers.UOffsetT, len(frameData.PlayerOprations))
+			// i := 0
+			// for pid, _ := range frameData.PlayerOprations {
+			// 	opts := frameData.PlayerOprations[pid]
+
+			// 	datas := builder.CreateByteVector(opts)
+
+			// 	flats.OperationStart(builder)
+			// 	flats.OperationAddPid(builder, byte(pid))
+			// 	flats.OperationAddData(builder, datas)
+			// 	rpData := flats.OperationEnd(builder)
+			// 	operationOffsetList[i] = rpData
+			// 	i++
+			// 	// operationOffsetList = append(operationOffsetList, rpData)
+			// 	// builder.PrependUOffsetT(rpData)
+			// }
+
+			// flats.LogicFrameStartOperationsVector(builder, len(frameData.PlayerOprations))
+			// for i := 0; i < len(operationOffsetList); i++ {
+			// 	builder.PrependUOffsetT(operationOffsetList[i])
+			// }
+			// operationsOffset = builder.EndVector(len(frameData.PlayerOprations))
+
+			// flats.LogicFrameStart(builder)
+			// flats.LogicFrameAddFrameId(builder, LogicFrameId)
+			// flats.LogicFrameAddOperations(builder, operationsOffset)
+
+			// builder.Finish(flats.LogicFrameEnd(builder))
+
+			// // 分发此帧操作给所有客户端
+			// dispatchChan <- builder.FinishedBytes()
+
+			// builder.Reset()
 			return
 		}
 
@@ -120,13 +150,13 @@ func pushDataToClient() {
 			AllFrameList[LogicFrameId] = frame
 		}
 
-		operations := frame.PlayerOprations
-		if operations == nil {
-			operations = make(map[uint8][]byte)
-		}
+		// operations := frame.PlayerOprations
+		// if operations == nil {
+		// 	operations = make(map[uint8][]byte)
+		// }
 
-		operations[f.PlayerId] = append(operations[f.PlayerId], f.SrcDatas...)
-		frame.PlayerOprations = operations
+		// operations[f.PlayerId] = append(operations[f.PlayerId], f.SrcDatas...)
+		frame.PlayerOprations = append(frame.PlayerOprations, f.SrcDatas)
 
 		// dispatchChan <- f.SrcDatas
 	}

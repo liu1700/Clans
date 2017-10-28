@@ -2,6 +2,7 @@ package netPackages
 
 import (
 	"encoding/binary"
+	"fmt"
 )
 
 type OpType int8
@@ -17,7 +18,8 @@ type FramePackage struct {
 	PacketId uint8
 	PlayerId uint8
 	SeqId    uint32
-	SrcDatas []byte // [optype1, d11, d12, splitflag, optype2, d21]
+	// SrcDatas []byte // [optype1, d11, d12, splitflag, optype2, d21]
+	SrcDatas []byte
 }
 
 // func GetFramePackageData(byteSlice []byte) []byte {
@@ -53,12 +55,12 @@ func BytesToFramePackage(byteSlice []byte) (*FramePackage, error) {
 
 	cloneData := byteSlice[dataStart:dataEnd]
 
-	pid := uint8(cloneData[0])
-	// fmt.Printf("Battle Pid %d \n", pid)
+	// pid := uint8(cloneData[0])
+	fmt.Println("cloneData ", cloneData)
 
 	pack := &FramePackage{
 		PacketId: packetId,
-		PlayerId: pid,
+		// PlayerId: pid,
 		SeqId:    seqData,
 		SrcDatas: cloneData,
 	}

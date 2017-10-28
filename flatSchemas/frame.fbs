@@ -1,11 +1,16 @@
 namespace flats;
 
+enum OpType: ubyte {
+    MOVE = 1,
+}
+
 table Operation {
     pid:ubyte;
-    data:[byte];
+    typ:ubyte;
+    data:[short];
 }
 
 table LogicFrame {
     frameId:uint;
-    operations:[Operation];
+    operations:[ubyte];
 }

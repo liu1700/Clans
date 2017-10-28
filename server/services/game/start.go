@@ -54,6 +54,7 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 	out := netWorking.NewBuffer(conn, sess.Die, config.Txqueuelen)
 	go out.Start()
 
+	game_server.SetRpmLimit(config.RpmLimit)
 	// start agent for PACKET processing
 	Wg.Add(1)
 	go game_server.Agent(sess, shuttingDownChan, &Wg, in, out)
@@ -118,7 +119,7 @@ func Start(config *services.Config) {
 	Wg.Add(1)
 	log.InitLogger(log.DEV)
 
-	db.InitDB("139.162.96.106", 3306, "root", "root", "runaway")
+	db.InitDB("127.0.0.1", 3306, "root", "test", "runaway")
 	db.CheckConnecting()
 
 	InitDBTables()

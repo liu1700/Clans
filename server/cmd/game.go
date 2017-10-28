@@ -45,7 +45,7 @@ var gameCmd = &cobra.Command{
 			Interval:     20,
 			Resend:       1,
 			Nc:           1,
-			RpmLimit:     2000,
+			RpmLimit:     2500,
 		}
 		game.Start(config)
 	},

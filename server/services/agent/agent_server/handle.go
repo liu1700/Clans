@@ -88,7 +88,7 @@ func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
 			sess.Write(flats.ResponseIdMatchMaking, pack, cloneJoinMatchMaking)
 
 			// 人满，开打
-			if len(playerList) == 2 {
+			if len(playerList) >= 1 {
 				roomReady = true
 				// 不应该复用pack
 				s.Write(flats.ResponseIdJoinRoom, pack, []byte{})
@@ -107,7 +107,6 @@ func RqFetchSpawnData(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	playerId := 0
 	for uId, _ := range playerList {
 		l := playerList[uId]
-
 		//
 		flats.RpPlayerSpawnStart(builder)
 		flats.RpPlayerSpawnAddPid(builder, byte(l.PlayerIdInRound))
@@ -121,7 +120,7 @@ func RqFetchSpawnData(sess *netWorking.Session, pack *netPackages.NetPackage) {
 		playersOffsetList[i] = rp
 		i++
 
-		if uId == l.UserId {
+		if uId == sess.UserId {
 			playerId = l.PlayerIdInRound
 		}
 	}
