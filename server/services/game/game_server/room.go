@@ -6,6 +6,7 @@ import (
 	"Clans/server/netWorking"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"time"
 
 	"github.com/google/flatbuffers/go"
@@ -83,7 +84,8 @@ func pushDataToClient() {
 			for i := 0; i < len(frameData.PlayerOprations); i++ {
 				size = uint16(len(frameData.PlayerOprations[i]))
 				binary.Write(returnBytes, binary.BigEndian, size)
-				binary.Write(returnBytes, binary.BigEndian, frameData.PlayerOprations[i])
+				returnBytes.Write(frameData.PlayerOprations[i])
+				fmt.Println("ret sz ", size)
 			}
 
 			l := returnBytes.Len()
@@ -96,6 +98,7 @@ func pushDataToClient() {
 
 			flats.LogicFrameStart(builder)
 			flats.LogicFrameAddFrameId(builder, LogicFrameId)
+			fmt.Println("curr frameid ", LogicFrameId)
 			flats.LogicFrameAddOperations(builder, operationsOffset)
 
 			builder.Finish(flats.LogicFrameEnd(builder))

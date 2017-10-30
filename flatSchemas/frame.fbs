@@ -1,9 +1,5 @@
 namespace flats;
 
-enum OpType: ubyte {
-    MOVE = 1,
-}
-
 table Operation {
     pid:ubyte;
     typ:ubyte;

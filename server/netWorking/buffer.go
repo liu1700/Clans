@@ -78,7 +78,8 @@ func (buf *Buffer) SendFrame(data []byte) bool {
 	binary.Write(d, binary.BigEndian, byte(flats.PacketIdGame))
 	// 写入数据长度
 	binary.Write(d, binary.BigEndian, uint16(len(data)))
-	binary.Write(d, binary.BigEndian, data)
+	// binary.Write(d, binary.BigEndian, data)
+	d.Write(data)
 
 	fmt.Println("write back ", d.Bytes())
 	n, err := buf.conn.Write(d.Bytes())

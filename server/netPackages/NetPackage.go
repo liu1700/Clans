@@ -29,7 +29,8 @@ func (p *NetPackage) Bytes() []byte {
 	binary.Write(buf, binary.BigEndian, p.SeqId)             // seq id
 	binary.Write(buf, binary.BigEndian, p.HandlerId)         // 如果是请求的话就是RequestId,返回的话就是ResponseId
 	binary.Write(buf, binary.BigEndian, uint32(len(p.Data))) // 写入数据包长度
-	binary.Write(buf, binary.BigEndian, p.Data)              // 数据内容
+	buf.Write(p.Data)
+	// binary.Write(buf, binary.BigEndian, p.Data)              // 数据内容
 
 	return buf.Bytes()
 }
@@ -128,11 +129,11 @@ func BytesToNetPackage(byteSlice []byte) (*NetPackage, error) {
 	fmt.Println("len ", len(byteSlice), " ds ", dataStart, " dn ", dataEnd)
 	data := byteSlice[dataStart:dataEnd]
 
-	// flatbuffer需要小端序数据
-	for i := len(data)/2 - 1; i >= 0; i-- {
-		opp := len(data) - 1 - i
-		data[i], data[opp] = data[opp], data[i]
-	}
+	// // flatbuffer需要小端序数据
+	// for i := len(data)/2 - 1; i >= 0; i-- {
+	// 	opp := len(data) - 1 - i
+	// 	data[i], data[opp] = data[opp], data[i]
+	// }
 
 	pack := &NetPackage{
 		PacketId:  packetId,
