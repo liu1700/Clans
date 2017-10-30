@@ -88,7 +88,7 @@ func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
 			sess.Write(flats.ResponseIdMatchMaking, pack, cloneJoinMatchMaking)
 
 			// 人满，开打
-			if len(playerList) >= 1 {
+			if len(playerList) >= 2 {
 				roomReady = true
 				// 不应该复用pack
 				s.Write(flats.ResponseIdJoinRoom, pack, []byte{})

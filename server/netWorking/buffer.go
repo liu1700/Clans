@@ -5,7 +5,6 @@ import (
 	"Clans/server/log"
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"net"
 )
 
@@ -81,7 +80,6 @@ func (buf *Buffer) SendFrame(data []byte) bool {
 	// binary.Write(d, binary.BigEndian, data)
 	d.Write(data)
 
-	fmt.Println("write back ", d.Bytes())
 	n, err := buf.conn.Write(d.Bytes())
 	if err != nil {
 		log.Logger().Warnf("Error send frame, bytes: %v reason: %v", n, err)

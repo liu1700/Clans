@@ -85,7 +85,6 @@ func pushDataToClient() {
 				size = uint16(len(frameData.PlayerOprations[i]))
 				binary.Write(returnBytes, binary.BigEndian, size)
 				returnBytes.Write(frameData.PlayerOprations[i])
-				fmt.Println("ret sz ", size)
 			}
 
 			l := returnBytes.Len()
@@ -102,6 +101,7 @@ func pushDataToClient() {
 			flats.LogicFrameAddOperations(builder, operationsOffset)
 
 			builder.Finish(flats.LogicFrameEnd(builder))
+			fmt.Println("curr datas ", builder.FinishedBytes())
 
 			// 分发此帧操作给所有客户端
 			dispatchChan <- builder.FinishedBytes()

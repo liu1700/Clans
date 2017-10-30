@@ -2,7 +2,6 @@ package netPackages
 
 import (
 	"encoding/binary"
-	"fmt"
 )
 
 type OpType int8
@@ -56,7 +55,6 @@ func BytesToFramePackage(byteSlice []byte) (*FramePackage, error) {
 	cloneData := byteSlice[dataStart:dataEnd]
 
 	// pid := uint8(cloneData[0])
-	fmt.Println("cloneData ", cloneData)
 
 	pack := &FramePackage{
 		PacketId: packetId,
