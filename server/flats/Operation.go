@@ -50,25 +50,45 @@ func (rcv *Operation) MutateTyp(n byte) bool {
 	return rcv._tab.MutateByteSlot(6, n)
 }
 
-func (rcv *Operation) Data(j int) int16 {
+func (rcv *Operation) FrameId() uint16 {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
+		return rcv._tab.GetUint16(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Operation) MutateFrameId(n uint16) bool {
+	return rcv._tab.MutateUint16Slot(8, n)
+}
+
+func (rcv *Operation) Data(j int) byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
 		a := rcv._tab.Vector(o)
-		return rcv._tab.GetInt16(a + flatbuffers.UOffsetT(j*2))
+		return rcv._tab.GetByte(a + flatbuffers.UOffsetT(j*1))
 	}
 	return 0
 }
 
 func (rcv *Operation) DataLength() int {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		return rcv._tab.VectorLen(o)
 	}
 	return 0
 }
 
+func (rcv *Operation) DataBytes() []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.ByteVector(o + rcv._tab.Pos)
+	}
+	return nil
+}
+
 func OperationStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(4)
 }
 func OperationAddPid(builder *flatbuffers.Builder, pid byte) {
 	builder.PrependByteSlot(0, pid, 0)
@@ -76,11 +96,14 @@ func OperationAddPid(builder *flatbuffers.Builder, pid byte) {
 func OperationAddTyp(builder *flatbuffers.Builder, typ byte) {
 	builder.PrependByteSlot(1, typ, 0)
 }
+func OperationAddFrameId(builder *flatbuffers.Builder, frameId uint16) {
+	builder.PrependUint16Slot(2, frameId, 0)
+}
 func OperationAddData(builder *flatbuffers.Builder, data flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(data), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(data), 0)
 }
 func OperationStartDataVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
-	return builder.StartVector(2, numElems, 2)
+	return builder.StartVector(1, numElems, 1)
 }
 func OperationEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

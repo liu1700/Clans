@@ -42,18 +42,21 @@ func BytesToFramePackage(byteSlice []byte) (*FramePackage, error) {
 	seqStart := packetIdEnd
 	seqEnd := seqStart + 4
 	seqData := binary.BigEndian.Uint32(byteSlice[seqStart:seqEnd])
+	// fmt.Println("seqId ", seqData)
 
 	// 包大小
 	sizeStart := seqEnd
 	sizeEnd := sizeStart + 4
 	dataSize := binary.BigEndian.Uint32(byteSlice[sizeStart:sizeEnd])
+	// fmt.Println("size ", dataSize)
 
 	// 数据
 	dataStart := sizeEnd
 	dataEnd := dataStart + dataSize
-
-	cloneData := byteSlice[dataStart:dataEnd]
-
+	// cloneData := byteSlice[dataStart:dataEnd]
+	cloneData := make([]byte, dataSize)
+	copy(cloneData, byteSlice[dataStart:dataEnd])
+	// fmt.Println("cloneData ", cloneData)
 	// pid := uint8(cloneData[0])
 
 	pack := &FramePackage{

@@ -3,7 +3,8 @@ namespace flats;
 table Operation {
     pid:ubyte;
     typ:ubyte;
-    data:[short];
+    frameId:ushort;
+    data:[ubyte];
 }
 
 table LogicFrame {
