@@ -57,6 +57,13 @@ func InitDispatcher(server *netWorking.Server) {
 				if !ok {
 					continue
 				}
+
+				// compressed := make([]byte, len(data))
+				// if n, _ := lz4.CompressBlock(data, compressed, 0); n > 0 {
+				// 	fmt.Println("compressed ", n)
+				// }
+				// fmt.Println("s len ", data, " len ", len(data))
+				// fmt.Println("d len ", compressed, " len ", len(compressed))
 				for id, _ := range server.Clients {
 					sess := server.Clients[id]
 					if sess == nil {
