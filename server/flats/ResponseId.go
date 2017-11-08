@@ -9,6 +9,7 @@ const (
 	ResponseIdMatchMaking = 12
 	ResponseIdMySpawnData = 13
 	ResponseIdStartMatchMaking = 14
+	ResponseIdRoomIsReady = 15
 )
 
 var EnumNamesResponseId = map[int]string{
@@ -18,5 +19,6 @@ var EnumNamesResponseId = map[int]string{
 	ResponseIdMatchMaking:"MatchMaking",
 	ResponseIdMySpawnData:"MySpawnData",
 	ResponseIdStartMatchMaking:"StartMatchMaking",
+	ResponseIdRoomIsReady:"RoomIsReady",
 }
 

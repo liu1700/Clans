@@ -32,12 +32,11 @@ var agentCmd = &cobra.Command{
 		fmt.Println("agent called")
 
 		config := &services.Config{
-			Listen:       "192.168.1.102:9090",
+			Listen:       "0.0.0.0:9090",
 			ReadDeadline: 15 * time.Second,
 			Sockbuf:      32767,
 			Udp_sockbuf:  4194304,
 			Txqueuelen:   128,
-			Dscp:         46,
 			Sndwnd:       32,
 			Rcvwnd:       32,
 			Mtu:          1280,

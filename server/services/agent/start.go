@@ -7,6 +7,7 @@ import (
 	"Clans/server/netWorking"
 	"Clans/server/services"
 	"Clans/server/services/agent/agent_server"
+	"Clans/server/structs/thirdParty"
 	"Clans/server/structs/users"
 	"Clans/server/utils"
 	"net"
@@ -123,6 +124,7 @@ func handleClient(conn net.Conn, s *netWorking.Server) {
 func InitDBTables() {
 	// AutoMigrate 只做新增操作，不会修改原有数据，不修改旧记录的数据类型，不删除旧记录的无用字段
 	db.DB().AutoMigrate(&users.User{})
+	db.DB().AutoMigrate(&thirdParty.ServiceRecord{})
 }
 
 func Start(config *services.Config) {

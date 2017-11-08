@@ -77,9 +77,6 @@ func (s *Server) UdpServer(handleClient ClientHandler) {
 	if err := lis.SetWriteBuffer(config.Sockbuf); err != nil {
 		log.Logger().Error("SetWriteBuffer", err)
 	}
-	if err := lis.SetDSCP(config.Dscp); err != nil {
-		log.Logger().Error("SetDSCP", err)
-	}
 
 	// loop accepting
 	for {

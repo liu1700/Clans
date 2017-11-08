@@ -10,4 +10,5 @@ var ReqHandler = map[uint8]func(sess *netWorking.Session, pack *netPackages.NetP
 	flats.RequestIdLogin:          RqUserLogin,
 	flats.RequestIdJoinRoom:       RqJoinRoom,
 	flats.RequestIdFetchSpawnData: RqFetchSpawnData,
+	flats.RequestIdRoomIsReady:    RqBroadCastRoomIsReady,
 }

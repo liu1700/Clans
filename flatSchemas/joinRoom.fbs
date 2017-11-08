@@ -8,6 +8,12 @@ table RpPlayerSpawn {
     shield:ubyte; // 初始护甲值
 }
 
+table RpJoinRoom{
+    RoomId:uint;
+    ChosenOne:byte; // 1: main client
+    MaxPlayerCountInRoom:ubyte;
+}
+
 table RpAllPlayerSpawns {
     pid:ubyte;
     others:[RpPlayerSpawn];

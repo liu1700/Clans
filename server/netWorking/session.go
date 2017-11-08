@@ -21,6 +21,7 @@ type Session struct {
 	Encoder       *rc4.Cipher // 加密器
 	Decoder       *rc4.Cipher // 解密器
 	UserId        uint32      // 玩家ID
+	RoomId        uint32      // 玩家所处的房间id
 	GameServiceId int         // 游戏服ID;游戏服的id
 	Stream        net.Conn    // 后端房间服数据流
 	// GameService *Service      // 游戏服务,也就是房间服务

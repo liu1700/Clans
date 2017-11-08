@@ -6,6 +6,7 @@ enum RequestId:byte {
     JoinRoom = 11,
     LeaveRoom = 12,
     FetchSpawnData = 13,
+    RoomIsReady = 14,
 }
 
 enum ResponseId:byte {
@@ -15,4 +16,5 @@ enum ResponseId:byte {
     MatchMaking = 12,
     MySpawnData = 13,
     StartMatchMaking = 14, 
+    RoomIsReady = 15,
 }
