@@ -119,7 +119,7 @@ func Start(config *services.Config) {
 	Wg.Add(1)
 	log.InitLogger(log.DEV)
 
-	db.InitDB("127.0.0.1", 3306, "root", "test", "runaway")
+	db.InitDB("127.0.0.1", 3306, "root", "root", "runaway")
 	db.CheckConnecting()
 
 	InitDBTables()

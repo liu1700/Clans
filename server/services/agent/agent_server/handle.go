@@ -171,7 +171,7 @@ func RqJoinRoom(sess *netWorking.Session, pack *netPackages.NetPackage) {
 	copy(cloneJoinMatchMaking, joinMatchMakingData)
 	builder.Reset()
 
-	rpIp := builder.CreateString(availableBattleServer[0])
+	rpIp := builder.CreateString(availableBattleServer[1])
 	flats.RpStartMatchMakingStart(builder)
 	flats.RpStartMatchMakingAddBattleServerIp(builder, rpIp)
 	flats.RpStartMatchMakingAddServerPort(builder, uint16(5055))
